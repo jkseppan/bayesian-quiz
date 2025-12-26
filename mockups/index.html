@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayesian Quiz - Design Mockups</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Space Grotesk', system-ui, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-8">
+    <div class="max-w-2xl w-full text-center space-y-8">
+        <div>
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent mb-4">
+                Bayesian Quiz
+            </h1>
+            <p class="text-slate-400 text-lg">Design Mockups</p>
+        </div>
+
+        <div class="grid gap-4">
+            <!-- Projector -->
+            <a href="projector.html" class="group block p-6 bg-white rounded-xl text-left hover:scale-[1.02] transition-transform">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-2xl">
+                        🖥️
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-xl font-semibold text-slate-900">Projector View</h2>
+                        <p class="text-slate-500 text-sm">Light mode — QR code, questions, distribution, reveal, leaderboard</p>
+                    </div>
+                    <svg class="w-6 h-6 text-slate-400 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </a>
+
+            <!-- Participant -->
+            <a href="participant.html" class="group block p-6 bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl text-left hover:scale-[1.02] transition-transform border border-slate-600">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-slate-600 rounded-lg flex items-center justify-center text-2xl">
+                        📱
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-xl font-semibold">Participant View</h2>
+                        <p class="text-slate-400 text-sm">Respects system dark/light preference — register, question input, results</p>
+                    </div>
+                    <svg class="w-6 h-6 text-slate-400 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </a>
+
+            <!-- Quizmaster -->
+            <a href="quizmaster.html" class="group block p-6 bg-gradient-to-r from-indigo-900/50 to-purple-900/50 rounded-xl text-left hover:scale-[1.02] transition-transform border border-indigo-500/30">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-indigo-500/20 rounded-lg flex items-center justify-center text-2xl">
+                        🎮
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-xl font-semibold">Quizmaster Panel</h2>
+                        <p class="text-slate-400 text-sm">Dark mode — control panel with click-through flow</p>
+                    </div>
+                    <svg class="w-6 h-6 text-slate-400 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </a>
+        </div>
+
+        <div class="text-slate-500 text-sm pt-8">
+            <p>Each view is a separate HTML file with its own theme settings</p>
+        </div>
+    </div>
+</body>
+</html>

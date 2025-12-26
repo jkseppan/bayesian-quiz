@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayesian Quiz - Quizmaster Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwindcss.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'quiz': {
+                            'bg': '#0a0a0f',
+                            'surface': '#12121a',
+                            'card': '#1a1a24',
+                            'border': '#2a2a3a',
+                            'primary': '#6366f1',
+                            'secondary': '#8b5cf6',
+                            'accent': '#06b6d4',
+                            'success': '#10b981',
+                            'warning': '#f59e0b',
+                            'danger': '#ef4444',
+                            'muted': '#6b7280',
+                        }
+                    },
+                    fontFamily: {
+                        'mono': ['JetBrains Mono', 'Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+        body {
+            font-family: 'Space Grotesk', system-ui, sans-serif;
+            background-color: #0a0a0f;
+            color: #ffffff;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .glow-primary {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(99, 102, 241, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-quiz-bg text-white min-h-screen p-6">
+    <div class="max-w-4xl mx-auto space-y-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center pb-4 border-b border-quiz-border">
+            <div>
+                <h1 class="text-2xl font-bold">Quizmaster Panel</h1>
+                <p class="text-quiz-muted">PyData Conference Quiz 2024</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="px-3 py-1 bg-quiz-success/20 text-quiz-success rounded-full text-sm">
+                    ● Live
+                </span>
+                <span class="text-quiz-muted">
+                    <span class="font-mono text-white">52</span> players
+                </span>
+            </div>
+        </div>
+
+        <!-- Current state indicator -->
+        <div class="bg-quiz-surface rounded-xl p-4 border border-quiz-border">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-quiz-muted text-sm">Current State</p>
+                    <p class="text-xl font-semibold text-quiz-accent">Question Active</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-quiz-muted text-sm">Question</p>
+                    <p class="text-xl font-mono">3 / 10</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-quiz-muted text-sm">Time Left</p>
+                    <p class="text-xl font-mono text-quiz-warning">42s</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-quiz-muted text-sm">Answers</p>
+                    <p class="text-xl font-mono text-quiz-success">47/52</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current question preview -->
+        <div class="bg-quiz-card rounded-xl p-4 border border-quiz-border">
+            <p class="text-quiz-muted text-sm mb-2">Current Question</p>
+            <p class="text-lg font-semibold">How many years old is Python today?</p>
+            <div class="flex gap-4 mt-2 text-sm text-quiz-muted">
+                <span>Answer: <span class="text-quiz-success font-mono">33.85</span></span>
+                <span>Unit: <span class="text-quiz-primary font-mono">years</span></span>
+            </div>
+        </div>
+
+        <!-- Main action buttons - the "click click click" flow -->
+        <div class="grid grid-cols-1 gap-4">
+            <div class="grid grid-cols-4 gap-3">
+                <button class="py-4 px-4 bg-quiz-surface border border-quiz-border rounded-xl text-quiz-muted opacity-70 cursor-not-allowed hover:opacity-90 transition-opacity">
+                    <div class="text-2xl mb-1">⏸️</div>
+                    <div class="text-sm">End Timer Early</div>
+                </button>
+                <button class="py-4 px-4 bg-gradient-to-br from-quiz-primary to-quiz-secondary rounded-xl hover:opacity-90 transition-opacity glow-primary">
+                    <div class="text-2xl mb-1">📊</div>
+                    <div class="text-sm font-semibold">Show Distribution</div>
+                </button>
+                <button class="py-4 px-4 bg-quiz-surface border border-quiz-border rounded-xl text-quiz-muted opacity-70 cursor-not-allowed hover:opacity-90 transition-opacity">
+                    <div class="text-2xl mb-1">✨</div>
+                    <div class="text-sm">Reveal Answer</div>
+                </button>
+                <button class="py-4 px-4 bg-quiz-surface border border-quiz-border rounded-xl text-quiz-muted opacity-70 cursor-not-allowed hover:opacity-90 transition-opacity">
+                    <div class="text-2xl mb-1">🏆</div>
+                    <div class="text-sm">Leaderboard</div>
+                </button>
+            </div>
+
+            <!-- Next Question (big button) -->
+            <button class="py-4 bg-quiz-surface border border-quiz-border rounded-xl text-quiz-muted opacity-70 cursor-not-allowed hover:opacity-90 transition-opacity flex items-center justify-center gap-3">
+                <span class="text-xl">➡️</span>
+                <span>Next Question</span>
+            </button>
+        </div>
+
+        <!-- State flow indicator -->
+        <div class="bg-quiz-surface/50 rounded-xl p-4 border border-quiz-border">
+            <p class="text-quiz-muted text-sm mb-3">Quiz Flow</p>
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-quiz-success/20 text-quiz-success flex items-center justify-center">✓</div>
+                    <span class="text-quiz-muted">Lobby</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-quiz-success mx-2"></div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-quiz-primary text-white flex items-center justify-center font-bold">●</div>
+                    <span class="text-white font-medium">Question</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-quiz-border mx-2"></div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-quiz-surface text-quiz-muted flex items-center justify-center border border-quiz-border">○</div>
+                    <span class="text-quiz-muted">Distribution</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-quiz-border mx-2"></div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-quiz-surface text-quiz-muted flex items-center justify-center border border-quiz-border">○</div>
+                    <span class="text-quiz-muted">Reveal</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-quiz-border mx-2"></div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-quiz-surface text-quiz-muted flex items-center justify-center border border-quiz-border">○</div>
+                    <span class="text-quiz-muted">Leaderboard</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick stats -->
+        <div class="grid grid-cols-3 gap-4">
+            <div class="bg-quiz-surface rounded-lg p-4 border border-quiz-border">
+                <p class="text-quiz-muted text-sm">Avg Response Time</p>
+                <p class="text-2xl font-mono font-bold">23.4s</p>
+            </div>
+            <div class="bg-quiz-surface rounded-lg p-4 border border-quiz-border">
+                <p class="text-quiz-muted text-sm">Leader</p>
+                <p class="text-xl font-semibold truncate">posterior_pete</p>
+            </div>
+            <div class="bg-quiz-surface rounded-lg p-4 border border-quiz-border">
+                <p class="text-quiz-muted text-sm">High Score</p>
+                <p class="text-2xl font-mono font-bold text-quiz-primary">312</p>
+            </div>
+        </div>
+
+        <!-- Questions list (for reference) -->
+        <div class="bg-quiz-surface rounded-xl p-4 border border-quiz-border">
+            <p class="text-quiz-muted text-sm mb-3">All Questions</p>
+            <div class="space-y-2">
+                <div class="flex items-center gap-3 p-2 rounded-lg bg-quiz-success/10 border border-quiz-success/30">
+                    <span class="w-6 h-6 rounded-full bg-quiz-success/20 text-quiz-success flex items-center justify-center text-xs">✓</span>
+                    <span class="flex-1 text-sm">How many projects does NumFocus sponsor?</span>
+                    <span class="text-quiz-muted text-xs font-mono">47</span>
+                </div>
+                <div class="flex items-center gap-3 p-2 rounded-lg bg-quiz-success/10 border border-quiz-success/30">
+                    <span class="w-6 h-6 rounded-full bg-quiz-success/20 text-quiz-success flex items-center justify-center text-xs">✓</span>
+                    <span class="flex-1 text-sm">How many GWh of electrical storage was built in EU-27 in 2024?</span>
+                    <span class="text-quiz-muted text-xs font-mono">12.3</span>
+                </div>
+                <div class="flex items-center gap-3 p-2 rounded-lg bg-quiz-primary/10 border border-quiz-primary/30">
+                    <span class="w-6 h-6 rounded-full bg-quiz-primary text-white flex items-center justify-center text-xs font-bold">3</span>
+                    <span class="flex-1 text-sm font-medium">How many years old is Python today?</span>
+                    <span class="text-quiz-primary text-xs font-mono">33.85</span>
+                </div>
+                <div class="flex items-center gap-3 p-2 rounded-lg bg-quiz-card">
+                    <span class="w-6 h-6 rounded-full bg-quiz-surface text-quiz-muted flex items-center justify-center text-xs border border-quiz-border">4</span>
+                    <span class="flex-1 text-sm text-quiz-muted">What is the mass of the Higgs boson in GeV?</span>
+                    <span class="text-quiz-muted text-xs font-mono">125.25</span>
+                </div>
+                <div class="flex items-center gap-3 p-2 rounded-lg bg-quiz-card">
+                    <span class="w-6 h-6 rounded-full bg-quiz-surface text-quiz-muted flex items-center justify-center text-xs border border-quiz-border">5</span>
+                    <span class="flex-1 text-sm text-quiz-muted">How many contributors does scikit-learn have on GitHub?</span>
+                    <span class="text-quiz-muted text-xs font-mono">3012</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
