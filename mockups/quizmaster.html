@@ -4,37 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bayesian Quiz - Quizmaster Panel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwindcss.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'quiz': {
-                            'bg': '#0a0a0f',
-                            'surface': '#12121a',
-                            'card': '#1a1a24',
-                            'border': '#2a2a3a',
-                            'primary': '#6366f1',
-                            'secondary': '#8b5cf6',
-                            'accent': '#06b6d4',
-                            'success': '#10b981',
-                            'warning': '#f59e0b',
-                            'danger': '#ef4444',
-                            'muted': '#6b7280',
-                        }
-                    },
-                    fontFamily: {
-                        'mono': ['JetBrains Mono', 'Fira Code', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-quiz-bg: #0a0a0f;
+            --color-quiz-surface: #12121a;
+            --color-quiz-card: #1a1a24;
+            --color-quiz-border: #2a2a3a;
+            --color-quiz-primary: #6366f1;
+            --color-quiz-secondary: #8b5cf6;
+            --color-quiz-accent: #06b6d4;
+            --color-quiz-success: #10b981;
+            --color-quiz-warning: #f59e0b;
+            --color-quiz-danger: #ef4444;
+            --color-quiz-muted: #6b7280;
+            --font-mono: "JetBrains Mono", "Fira Code", monospace;
+        }
+
         :root {
             color-scheme: dark;
         }
