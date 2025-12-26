@@ -1,0 +1,17 @@
+[project]
+name = "bayesian-quiz"
+version = "0.1.0"
+description = "Meetup quiz where you quantify your uncertainty"
+readme = "README.md"
+authors = [
+    { name = "Jouni K. Seppänen", email = "jks@iki.fi" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+bayesian-quiz = "bayesian_quiz:main"
+
+[build-system]
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
