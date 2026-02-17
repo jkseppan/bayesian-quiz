@@ -20,7 +20,7 @@
 {% block body_class %}min-h-screen p-4{% endblock %}
 
 {% block body %}
-<div id="main-content" class="max-w-md mx-auto" hx-get="/fragments/participant" hx-trigger="sse:phase_changed" hx-swap="innerHTML">
+<div id="main-content" class="max-w-md mx-auto" hx-get="/fragments/participant" hx-trigger="phase_changed from:body" hx-swap="innerHTML">
     {% include "fragments/participant.html" %}
 </div>
 {% endblock %}

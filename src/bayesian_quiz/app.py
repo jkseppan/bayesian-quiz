@@ -7,10 +7,9 @@ from typing import Annotated
 from uuid import uuid4
 
 from fastapi import FastAPI, Request, Form, Cookie
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sse_starlette.sse import EventSourceResponse
 
 from .state import game
 
@@ -29,6 +28,10 @@ if MOCKUPS_DIR.exists():
 # --- SSE Endpoint ---
 
 
+def _sse_message(event: str, data: str) -> str:
+    return f"event: {event}\ndata: {data}\n\n"
+
+
 @app.get("/events")
 async def events(request: Request):
     """SSE endpoint for real-time state updates."""
@@ -36,32 +39,26 @@ async def events(request: Request):
     async def event_generator():
         queue = game.subscribe()
         try:
-            # Send initial state
-            yield {
-                "event": "connected",
-                "data": json.dumps({"phase": game.state.phase.value}),
-            }
+            yield _sse_message("connected", json.dumps({"phase": game.state.phase.value}))
 
             while True:
-                # Check if client disconnected
                 if await request.is_disconnected():
                     break
 
                 try:
-                    # Wait for events with timeout to check disconnection
                     event = await asyncio.wait_for(queue.get(), timeout=30.0)
-                    yield {
-                        "event": event,
-                        "data": json.dumps(_serialize_state()),
-                    }
+                    yield _sse_message(event, json.dumps(_serialize_state()))
                 except asyncio.TimeoutError:
-                    # Send keepalive
-                    yield {"event": "keepalive", "data": ""}
+                    yield ": keepalive\n\n"
 
         finally:
             game.unsubscribe(queue)
 
-    return EventSourceResponse(event_generator())
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 def _serialize_state() -> dict:

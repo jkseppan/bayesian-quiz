@@ -5,7 +5,7 @@
 {% block body_class %}bg-white text-slate-900 min-h-screen{% endblock %}
 
 {% block body %}
-<div id="main-content" class="min-h-screen flex flex-col" sse-swap="phase_changed" hx-get="/fragments/projector" hx-trigger="sse:phase_changed" hx-swap="innerHTML">
+<div id="main-content" class="min-h-screen flex flex-col" hx-get="/fragments/projector" hx-trigger="phase_changed from:body" hx-swap="innerHTML">
     {% include "fragments/projector.html" %}
 </div>
 {% endblock %}
