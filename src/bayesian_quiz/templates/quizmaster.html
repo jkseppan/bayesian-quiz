@@ -17,7 +17,7 @@
         </button>
     </div>
 
-    <div id="control-panel" hx-get="/fragments/quizmaster" hx-trigger="phase_changed from:body, participant_joined from:body, estimate_submitted from:body" hx-swap="innerHTML">
+    <div id="control-panel" hx-get="/fragments/quizmaster" hx-trigger="phase_changed from:#sse, participant_joined from:#sse, estimate_submitted from:#sse" hx-swap="innerHTML">
         {% include "fragments/quizmaster.html" %}
     </div>
 </div>

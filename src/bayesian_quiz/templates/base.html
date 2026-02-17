@@ -16,7 +16,8 @@
     </style>
     {% block head %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}" hx-get="/events" hx-trigger="load" hx-swap="none">
+<body class="{% block body_class %}{% endblock %}">
+    <div id="sse" hx-get="/events" hx-trigger="load" hx-swap="none" hidden></div>
     {% block body %}{% endblock %}
     {% block scripts %}{% endblock %}
 </body>
