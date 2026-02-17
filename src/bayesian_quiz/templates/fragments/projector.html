@@ -1,0 +1,95 @@
+{% if game.phase.value == "lobby" %}
+<!-- Lobby: Welcome screen with QR code -->
+<div class="flex-1 flex flex-col items-center justify-center p-8">
+    <h1 class="text-6xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent mb-8">
+        Bayesian Quiz
+    </h1>
+
+    <div class="bg-slate-100 p-8 rounded-2xl shadow-lg mb-8">
+        <div class="w-64 h-64 bg-white border-4 border-slate-200 rounded-xl flex items-center justify-center">
+            <span class="text-slate-400 text-sm">QR Code</span>
+        </div>
+    </div>
+
+    <p class="text-2xl text-slate-600 mb-4">Join at <span class="font-mono font-semibold text-indigo-600">quiz.example.com/play</span></p>
+
+    <div class="text-xl text-slate-500">
+        <span class="font-mono text-3xl font-bold text-indigo-600">{{ game.participants | length }}</span> players joined
+    </div>
+</div>
+
+{% elif game.phase.value == "question_active" %}
+<!-- Question: Show question with countdown -->
+<div class="flex-1 flex flex-col p-8">
+    <div class="text-center mb-8">
+        <span class="text-slate-500">Question {{ game.current_question_index + 1 }} of {{ game.questions | length }}</span>
+    </div>
+
+    <div class="flex-1 flex items-center justify-center">
+        <h2 class="text-5xl font-semibold text-center max-w-4xl leading-tight">
+            {{ game.current_question.text }}
+        </h2>
+    </div>
+
+    <div class="flex justify-between items-center">
+        <div class="text-xl text-slate-500">
+            <span class="font-mono text-2xl font-bold text-emerald-600">{{ game.get_current_estimates() | length }}</span> / {{ game.participants | length }} answered
+        </div>
+        <div class="text-6xl font-mono font-bold text-indigo-600">
+            0:45
+        </div>
+    </div>
+</div>
+
+{% elif game.phase.value == "show_distribution" %}
+<!-- Show aggregate distribution -->
+<div class="flex-1 flex flex-col items-center justify-center p-8">
+    <h2 class="text-3xl font-semibold mb-8">{{ game.current_question.text }}</h2>
+
+    <div class="w-full max-w-4xl h-80 bg-slate-100 rounded-2xl flex items-center justify-center mb-8">
+        <span class="text-slate-400">Distribution visualization</span>
+    </div>
+
+    <p class="text-xl text-slate-500">{{ game.get_current_estimates() | length }} estimates received</p>
+</div>
+
+{% elif game.phase.value == "reveal_answer" %}
+<!-- Reveal correct answer -->
+<div class="flex-1 flex flex-col items-center justify-center p-8">
+    <h2 class="text-3xl font-semibold mb-8">{{ game.current_question.text }}</h2>
+
+    <div class="text-8xl font-mono font-bold text-emerald-600 mb-4">
+        {{ game.current_question.answer }} {{ game.current_question.unit }}
+    </div>
+
+    <p class="text-xl text-slate-600 max-w-2xl text-center">
+        {{ game.current_question.fun_fact }}
+    </p>
+</div>
+
+{% elif game.phase.value == "leaderboard" %}
+<!-- Leaderboard -->
+<div class="flex-1 flex flex-col items-center justify-center p-8">
+    <h2 class="text-4xl font-bold mb-12">Leaderboard</h2>
+
+    <div class="w-full max-w-2xl space-y-4">
+        {% for participant in game.participants.values() | sort(attribute='total_score', reverse=True) %}
+        <div class="flex items-center gap-4 p-4 bg-slate-100 rounded-xl">
+            <span class="text-2xl font-bold text-slate-400 w-12">{{ loop.index }}</span>
+            <span class="flex-1 text-xl font-semibold">{{ participant.nickname }}</span>
+            <span class="text-xl font-mono font-bold text-indigo-600">{{ "%.1f" | format(participant.total_score) }}</span>
+        </div>
+        {% else %}
+        <p class="text-slate-500 text-center">No players yet</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% elif game.phase.value == "end" %}
+<!-- Game over -->
+<div class="flex-1 flex flex-col items-center justify-center p-8">
+    <h2 class="text-5xl font-bold mb-8">Game Over!</h2>
+    <p class="text-2xl text-slate-600">Thanks for playing</p>
+</div>
+
+{% endif %}

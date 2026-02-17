@@ -1,0 +1,168 @@
+{% if not participant %}
+<!-- Registration -->
+<div class="card border rounded-2xl p-6 mt-8">
+    <h1 class="text-2xl font-bold text-center mb-6">Join the Quiz</h1>
+
+    <form hx-post="/api/register" hx-swap="innerHTML" hx-target="#main-content">
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Your Nickname</label>
+            <input
+                type="text"
+                name="nickname"
+                class="input-field w-full px-4 py-3 rounded-xl border text-lg"
+                placeholder="Enter a nickname"
+                required
+                autofocus
+            >
+        </div>
+        <button
+            type="submit"
+            class="w-full py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors"
+        >
+            Join Game
+        </button>
+    </form>
+</div>
+
+{% elif game.phase.value == "lobby" %}
+<!-- Waiting in lobby -->
+<div class="text-center mt-16">
+    <div class="text-6xl mb-4">&#128075;</div>
+    <h1 class="text-2xl font-bold mb-2">Hi, {{ participant.nickname }}!</h1>
+    <p class="text-slate-500">Waiting for the quiz to start...</p>
+
+    <div class="mt-8 p-4 card border rounded-xl">
+        <p class="text-sm text-slate-500">{{ game.participants | length }} players ready</p>
+    </div>
+</div>
+
+{% elif game.phase.value == "question_active" %}
+<!-- Question input -->
+{% set already_answered = game.current_question_index in participant.estimates %}
+<div class="mt-4">
+    <div class="text-center mb-6">
+        <span class="text-sm text-slate-500">Question {{ game.current_question_index + 1 }}</span>
+        <h2 class="text-xl font-semibold mt-2">{{ game.current_question.text }}</h2>
+    </div>
+
+    {% if already_answered %}
+    <div class="card border rounded-2xl p-6 text-center">
+        <div class="text-4xl mb-2">&#9989;</div>
+        <p class="font-semibold">Answer submitted!</p>
+        <p class="text-sm text-slate-500 mt-2">
+            &mu; = {{ "%.1f" | format(participant.estimates[game.current_question_index].mu) }},
+            &sigma; = {{ "%.1f" | format(participant.estimates[game.current_question_index].sigma) }}
+        </p>
+    </div>
+    {% else %}
+    <form hx-post="/api/estimate" hx-swap="innerHTML" hx-target="#main-content" class="card border rounded-2xl p-6 space-y-6">
+        <div>
+            <label class="block text-sm font-medium mb-2">Your estimate (&mu;)</label>
+            <input
+                type="number"
+                name="mu"
+                inputmode="decimal"
+                step="any"
+                class="input-field w-full px-4 py-3 rounded-xl border text-lg font-mono"
+                placeholder="0"
+                required
+            >
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-2">Uncertainty (&sigma;)</label>
+            <input
+                type="range"
+                name="sigma_range"
+                min="0.1"
+                max="100"
+                step="0.1"
+                value="10"
+                class="w-full"
+                oninput="document.getElementById('sigma_input').value = this.value"
+            >
+            <input
+                type="number"
+                name="sigma"
+                id="sigma_input"
+                inputmode="decimal"
+                step="any"
+                min="0.1"
+                value="10"
+                class="input-field w-full px-4 py-3 rounded-xl border text-lg font-mono mt-2"
+                required
+                oninput="document.querySelector('input[name=sigma_range]').value = this.value"
+            >
+        </div>
+
+        <button
+            type="submit"
+            class="w-full py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors"
+        >
+            Submit Estimate
+        </button>
+    </form>
+    {% endif %}
+</div>
+
+{% elif game.phase.value == "show_distribution" %}
+<!-- Waiting for reveal -->
+<div class="text-center mt-16">
+    <div class="text-6xl mb-4">&#129300;</div>
+    <h2 class="text-xl font-semibold mb-2">Time's up!</h2>
+    <p class="text-slate-500">Look at the projector to see how everyone answered...</p>
+</div>
+
+{% elif game.phase.value == "reveal_answer" %}
+<!-- Show result -->
+<div class="text-center mt-8">
+    <h2 class="text-xl font-semibold mb-4">{{ game.current_question.text }}</h2>
+
+    <div class="card border rounded-2xl p-6 mb-4">
+        <p class="text-sm text-slate-500 mb-2">Correct answer</p>
+        <p class="text-4xl font-mono font-bold text-emerald-600">
+            {{ game.current_question.answer }} {{ game.current_question.unit }}
+        </p>
+    </div>
+
+    {% if game.current_question_index in participant.estimates %}
+    <div class="card border rounded-2xl p-6">
+        <p class="text-sm text-slate-500 mb-2">Your estimate</p>
+        <p class="text-2xl font-mono">
+            {{ "%.1f" | format(participant.estimates[game.current_question_index].mu) }}
+            &plusmn; {{ "%.1f" | format(participant.estimates[game.current_question_index].sigma) }}
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+{% elif game.phase.value == "leaderboard" %}
+<!-- Leaderboard with position -->
+<div class="mt-8">
+    <h2 class="text-2xl font-bold text-center mb-6">Leaderboard</h2>
+
+    <div class="space-y-3">
+        {% for p in game.participants.values() | sort(attribute='total_score', reverse=True) %}
+        <div class="card border rounded-xl p-4 flex items-center gap-3 {% if p.id == participant.id %}ring-2 ring-indigo-500{% endif %}">
+            <span class="text-xl font-bold text-slate-400 w-8">{{ loop.index }}</span>
+            <span class="flex-1 font-semibold">{{ p.nickname }}</span>
+            <span class="font-mono font-bold text-indigo-600">{{ "%.1f" | format(p.total_score) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% elif game.phase.value == "end" %}
+<!-- Game over -->
+<div class="text-center mt-16">
+    <div class="text-6xl mb-4">&#127881;</div>
+    <h2 class="text-2xl font-bold mb-2">Game Over!</h2>
+    <p class="text-slate-500">Thanks for playing, {{ participant.nickname }}!</p>
+
+    <div class="card border rounded-2xl p-6 mt-8">
+        <p class="text-sm text-slate-500 mb-2">Your final score</p>
+        <p class="text-4xl font-mono font-bold text-indigo-600">{{ "%.1f" | format(participant.total_score) }}</p>
+    </div>
+</div>
+
+{% endif %}

@@ -1,0 +1,98 @@
+<!-- Status bar -->
+<div class="grid grid-cols-3 gap-4 mb-8">
+    <div class="bg-slate-800 rounded-xl p-4">
+        <p class="text-slate-400 text-sm">Phase</p>
+        <p class="text-xl font-semibold capitalize">{{ game.phase.value | replace("_", " ") }}</p>
+    </div>
+    <div class="bg-slate-800 rounded-xl p-4">
+        <p class="text-slate-400 text-sm">Players</p>
+        <p class="text-xl font-mono font-semibold">{{ game.participants | length }}</p>
+    </div>
+    <div class="bg-slate-800 rounded-xl p-4">
+        <p class="text-slate-400 text-sm">Question</p>
+        <p class="text-xl font-mono font-semibold">{{ game.current_question_index + 1 }} / {{ game.questions | length }}</p>
+    </div>
+</div>
+
+<!-- Current state info -->
+<div class="bg-slate-800 rounded-xl p-6 mb-8">
+    {% if game.phase.value == "lobby" %}
+    <h2 class="text-lg font-semibold mb-4">Waiting for players</h2>
+    <div class="space-y-2">
+        {% for participant in game.participants.values() %}
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+            <span>{{ participant.nickname }}</span>
+        </div>
+        {% else %}
+        <p class="text-slate-400">No players yet</p>
+        {% endfor %}
+    </div>
+
+    {% elif game.phase.value == "question_active" %}
+    <h2 class="text-lg font-semibold mb-2">Current Question</h2>
+    <p class="text-slate-300 mb-4">{{ game.current_question.text }}</p>
+    <div class="flex items-center gap-4">
+        <div>
+            <p class="text-slate-400 text-sm">Answer (hidden)</p>
+            <p class="font-mono text-emerald-400">{{ game.current_question.answer }} {{ game.current_question.unit }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400 text-sm">Responses</p>
+            <p class="font-mono">{{ game.get_current_estimates() | length }} / {{ game.participants | length }}</p>
+        </div>
+    </div>
+
+    {% elif game.phase.value == "show_distribution" %}
+    <h2 class="text-lg font-semibold mb-2">Distribution Shown</h2>
+    <p class="text-slate-300">{{ game.get_current_estimates() | length }} estimates displayed</p>
+    <p class="text-slate-400 text-sm mt-2">Answer still hidden: {{ game.current_question.answer }} {{ game.current_question.unit }}</p>
+
+    {% elif game.phase.value == "reveal_answer" %}
+    <h2 class="text-lg font-semibold mb-2">Answer Revealed</h2>
+    <p class="font-mono text-2xl text-emerald-400">{{ game.current_question.answer }} {{ game.current_question.unit }}</p>
+    <p class="text-slate-400 text-sm mt-2">{{ game.current_question.fun_fact }}</p>
+
+    {% elif game.phase.value == "leaderboard" %}
+    <h2 class="text-lg font-semibold mb-4">Current Standings</h2>
+    <div class="space-y-2">
+        {% for participant in game.participants.values() | sort(attribute='total_score', reverse=True) %}
+        <div class="flex items-center gap-3">
+            <span class="text-slate-400 w-6">{{ loop.index }}.</span>
+            <span class="flex-1">{{ participant.nickname }}</span>
+            <span class="font-mono text-indigo-400">{{ "%.1f" | format(participant.total_score) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% elif game.phase.value == "end" %}
+    <h2 class="text-lg font-semibold mb-2">Game Over</h2>
+    <p class="text-slate-300">The quiz has ended. Reset to start a new game.</p>
+
+    {% endif %}
+</div>
+
+<!-- Advance button -->
+{% if game.phase.value != "end" %}
+<button
+    hx-post="/api/advance"
+    hx-swap="none"
+    class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-lg font-semibold transition-colors"
+>
+    {% if game.phase.value == "lobby" %}
+        Start Quiz
+    {% elif game.phase.value == "question_active" %}
+        End Submissions
+    {% elif game.phase.value == "show_distribution" %}
+        Reveal Answer
+    {% elif game.phase.value == "reveal_answer" %}
+        Show Leaderboard
+    {% elif game.phase.value == "leaderboard" %}
+        {% if game.current_question_index < game.questions | length - 1 %}
+            Next Question
+        {% else %}
+            End Quiz
+        {% endif %}
+    {% endif %}
+</button>
+{% endif %}

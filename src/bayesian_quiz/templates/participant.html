@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Play - Bayesian Quiz{% endblock %}
+
+{% block head %}
+<style>
+    @media (prefers-color-scheme: dark) {
+        body { background: #0f172a; color: #f8fafc; }
+        .card { background: #1e293b; border-color: #334155; }
+        .input-field { background: #1e293b; border-color: #475569; color: #f8fafc; }
+    }
+    @media (prefers-color-scheme: light) {
+        body { background: #f8fafc; color: #0f172a; }
+        .card { background: #ffffff; border-color: #e2e8f0; }
+        .input-field { background: #ffffff; border-color: #cbd5e1; color: #0f172a; }
+    }
+</style>
+{% endblock %}
+
+{% block body_class %}min-h-screen p-4{% endblock %}
+
+{% block body %}
+<div id="main-content" class="max-w-md mx-auto" hx-get="/fragments/participant" hx-trigger="sse:phase_changed" hx-swap="innerHTML">
+    {% include "fragments/participant.html" %}
+</div>
+{% endblock %}

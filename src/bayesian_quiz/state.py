@@ -1,0 +1,178 @@
+"""Game state management for Bayesian Quiz."""
+
+from enum import Enum
+from dataclasses import dataclass, field
+from typing import Callable
+import asyncio
+
+
+class GamePhase(str, Enum):
+    """The current phase of the quiz."""
+
+    LOBBY = "lobby"
+    QUESTION_ACTIVE = "question_active"
+    SHOW_DISTRIBUTION = "show_distribution"
+    REVEAL_ANSWER = "reveal_answer"
+    LEADERBOARD = "leaderboard"
+    END = "end"
+
+
+@dataclass
+class Estimate:
+    """A participant's estimate for a question."""
+
+    mu: float  # Mean estimate
+    sigma: float  # Standard deviation (uncertainty)
+
+
+@dataclass
+class Participant:
+    """A quiz participant."""
+
+    id: str
+    nickname: str
+    scores: dict[int, float] = field(default_factory=dict)  # question_index -> score
+    estimates: dict[int, Estimate] = field(default_factory=dict)  # question_index -> estimate
+
+    @property
+    def total_score(self) -> float:
+        return sum(self.scores.values())
+
+
+@dataclass
+class Question:
+    """A quiz question."""
+
+    text: str
+    answer: float
+    unit: str = ""
+    fun_fact: str = ""
+
+
+@dataclass
+class GameState:
+    """The complete state of a quiz game."""
+
+    phase: GamePhase = GamePhase.LOBBY
+    questions: list[Question] = field(default_factory=list)
+    current_question_index: int = 0
+    participants: dict[str, Participant] = field(default_factory=dict)
+    countdown_seconds: int = 60
+
+    @property
+    def current_question(self) -> Question | None:
+        if 0 <= self.current_question_index < len(self.questions):
+            return self.questions[self.current_question_index]
+        return None
+
+    def get_current_estimates(self) -> list[Estimate]:
+        """Get all estimates for the current question."""
+        return [
+            p.estimates[self.current_question_index]
+            for p in self.participants.values()
+            if self.current_question_index in p.estimates
+        ]
+
+
+class GameManager:
+    """Manages game state and broadcasts updates to connected clients."""
+
+    def __init__(self) -> None:
+        self.state = GameState()
+        self._subscribers: list[asyncio.Queue[str]] = []
+        self._load_sample_questions()
+
+    def _load_sample_questions(self) -> None:
+        """Load sample questions for testing."""
+        self.state.questions = [
+            Question(
+                text="How many years old is Python today?",
+                answer=34.0,  # First released Feb 1991
+                unit="years",
+                fun_fact="Python was conceived in the late 1980s by Guido van Rossum at CWI in the Netherlands.",
+            ),
+            Question(
+                text="How many contributors does scikit-learn have on GitHub?",
+                answer=3100.0,
+                unit="contributors",
+                fun_fact="scikit-learn started as a Google Summer of Code project in 2007.",
+            ),
+            Question(
+                text="What is the mass of the Higgs boson in GeV?",
+                answer=125.25,
+                unit="GeV",
+                fun_fact="The Higgs boson was discovered in 2012 at CERN's Large Hadron Collider.",
+            ),
+        ]
+
+    def subscribe(self) -> asyncio.Queue[str]:
+        """Subscribe to state updates. Returns a queue that receives update events."""
+        queue: asyncio.Queue[str] = asyncio.Queue()
+        self._subscribers.append(queue)
+        return queue
+
+    def unsubscribe(self, queue: asyncio.Queue[str]) -> None:
+        """Unsubscribe from state updates."""
+        if queue in self._subscribers:
+            self._subscribers.remove(queue)
+
+    async def broadcast(self, event: str = "state_update") -> None:
+        """Broadcast an event to all subscribers."""
+        for queue in self._subscribers:
+            await queue.put(event)
+
+    async def add_participant(self, participant_id: str, nickname: str) -> Participant:
+        """Add a new participant to the game."""
+        participant = Participant(id=participant_id, nickname=nickname)
+        self.state.participants[participant_id] = participant
+        await self.broadcast("participant_joined")
+        return participant
+
+    async def submit_estimate(
+        self, participant_id: str, mu: float, sigma: float
+    ) -> None:
+        """Submit an estimate for the current question."""
+        if participant_id not in self.state.participants:
+            raise ValueError("Participant not found")
+        if self.state.phase != GamePhase.QUESTION_ACTIVE:
+            raise ValueError("Not accepting estimates")
+
+        estimate = Estimate(mu=mu, sigma=sigma)
+        self.state.participants[participant_id].estimates[
+            self.state.current_question_index
+        ] = estimate
+        await self.broadcast("estimate_submitted")
+
+    async def advance_phase(self) -> None:
+        """Advance to the next phase in the quiz flow."""
+        transitions = {
+            GamePhase.LOBBY: GamePhase.QUESTION_ACTIVE,
+            GamePhase.QUESTION_ACTIVE: GamePhase.SHOW_DISTRIBUTION,
+            GamePhase.SHOW_DISTRIBUTION: GamePhase.REVEAL_ANSWER,
+            GamePhase.REVEAL_ANSWER: GamePhase.LEADERBOARD,
+            GamePhase.LEADERBOARD: self._next_question_or_end,
+        }
+
+        next_phase = transitions.get(self.state.phase)
+        if callable(next_phase):
+            next_phase = next_phase()
+        if next_phase:
+            self.state.phase = next_phase
+            await self.broadcast("phase_changed")
+
+    def _next_question_or_end(self) -> GamePhase:
+        """Move to next question or end the game."""
+        if self.state.current_question_index < len(self.state.questions) - 1:
+            self.state.current_question_index += 1
+            return GamePhase.QUESTION_ACTIVE
+        return GamePhase.END
+
+    async def reset(self) -> None:
+        """Reset the game to initial state."""
+        self.state = GameState()
+        self._load_sample_questions()
+        await self.broadcast("game_reset")
+
+
+# Global game manager instance
+game = GameManager()

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Quizmaster - Bayesian Quiz{% endblock %}
+
+{% block body_class %}bg-slate-900 text-white min-h-screen{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-2xl font-bold">Quizmaster Control</h1>
+        <button
+            hx-post="/api/reset"
+            hx-swap="none"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition-colors"
+        >
+            Reset Game
+        </button>
+    </div>
+
+    <div id="control-panel" hx-get="/fragments/quizmaster" hx-trigger="sse:phase_changed, sse:participant_joined, sse:estimate_submitted" hx-swap="innerHTML">
+        {% include "fragments/quizmaster.html" %}
+    </div>
+</div>
+{% endblock %}
