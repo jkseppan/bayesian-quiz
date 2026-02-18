@@ -133,6 +133,11 @@ class GameManager:
         for queue in self._subscribers:
             await queue.put(event)
 
+    async def shutdown(self) -> None:
+        """Signal all subscribers to disconnect."""
+        for queue in self._subscribers:
+            await queue.put(None)
+
     async def add_participant(self, participant_id: str, nickname: str) -> Participant:
         """Add a new participant to the game."""
         participant = Participant(id=participant_id, nickname=nickname)

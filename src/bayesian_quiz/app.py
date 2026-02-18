@@ -17,6 +17,11 @@ app = FastAPI(title="Bayesian Quiz")
 
 _auto_advance_task: asyncio.Task | None = None
 
+
+@app.on_event("shutdown")
+async def _shutdown():
+    await game.shutdown()
+
 # Templates setup
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
@@ -50,6 +55,8 @@ async def events(request: Request):
 
                 try:
                     event = await asyncio.wait_for(queue.get(), timeout=30.0)
+                    if event is None:
+                        break
                     yield _sse_message(event, json.dumps(_serialize_state()))
                 except asyncio.TimeoutError:
                     yield ": keepalive\n\n"
