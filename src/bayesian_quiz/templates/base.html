@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Bayesian Quiz{% endblock %}</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@4.0.0-alpha7/dist/htmx.min.js"></script>
-    <meta name="htmx-config" content='{"sse": {"reconnect": true, "reconnectDelay": 500, "reconnectMaxDelay": 60000, "reconnectMaxAttempts": 50}}'>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,8 +16,19 @@
     {% block head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
-    <div id="sse" hx-get="/events" hx-trigger="load" hx-swap="none" hidden></div>
+    <div id="sse" hidden></div>
     {% block body %}{% endblock %}
     {% block scripts %}{% endblock %}
+    <script>
+    (function() {
+        var sse = document.getElementById('sse');
+        var source = new EventSource('/events');
+        ['phase_changed', 'participant_joined', 'estimate_submitted', 'game_reset', 'connected'].forEach(function(evt) {
+            source.addEventListener(evt, function() {
+                sse.dispatchEvent(new CustomEvent(evt, {bubbles: true}));
+            });
+        });
+    })();
+    </script>
 </body>
 </html>

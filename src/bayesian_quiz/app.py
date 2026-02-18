@@ -11,9 +11,11 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from .state import game
+from .state import game, GamePhase, QUESTION_DURATION_SECONDS, GRACE_PERIOD_SECONDS
 
 app = FastAPI(title="Bayesian Quiz")
+
+_auto_advance_task: asyncio.Task | None = None
 
 # Templates setup
 TEMPLATES_DIR = Path(__file__).parent / "templates"
@@ -39,6 +41,7 @@ async def events(request: Request):
     async def event_generator():
         queue = game.subscribe()
         try:
+            yield "retry: 500\n"
             yield _sse_message("connected", json.dumps({"phase": game.state.phase.value}))
 
             while True:
@@ -70,6 +73,7 @@ def _serialize_state() -> dict:
         "total_questions": len(state.questions),
         "participant_count": len(state.participants),
         "estimate_count": len(state.get_current_estimates()),
+        "question_deadline": state.question_deadline,
         "question": (
             {
                 "text": state.current_question.text,
@@ -201,8 +205,10 @@ async def submit_estimate(
     if not participant:
         return HTMLResponse("<p>Participant not found</p>", status_code=404)
 
-    await game.submit_estimate(participant_id, mu, sigma)
-    # Return the updated participant fragment
+    try:
+        await game.submit_estimate(participant_id, mu, sigma)
+    except ValueError as e:
+        return HTMLResponse(f"<p>{e}</p>", status_code=400)
     return templates.TemplateResponse(
         request,
         "fragments/participant.html",
@@ -210,10 +216,30 @@ async def submit_estimate(
     )
 
 
+async def _auto_advance_after_timer(question_index: int) -> None:
+    await asyncio.sleep(QUESTION_DURATION_SECONDS + GRACE_PERIOD_SECONDS)
+    if (
+        game.state.phase == GamePhase.QUESTION_ACTIVE
+        and game.state.current_question_index == question_index
+    ):
+        await game.advance_phase()
+
+
+def _schedule_auto_advance() -> None:
+    global _auto_advance_task
+    if _auto_advance_task and not _auto_advance_task.done():
+        _auto_advance_task.cancel()
+    _auto_advance_task = asyncio.create_task(
+        _auto_advance_after_timer(game.state.current_question_index)
+    )
+
+
 @app.post("/api/advance")
 async def advance():
     """Advance to the next phase (quizmaster only)."""
     await game.advance_phase()
+    if game.state.phase == GamePhase.QUESTION_ACTIVE:
+        _schedule_auto_advance()
     return {"phase": game.state.phase.value}
 
 

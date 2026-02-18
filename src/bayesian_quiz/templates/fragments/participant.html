@@ -42,6 +42,8 @@
 <div class="mt-4">
     <div class="text-center mb-6">
         <span class="text-sm text-slate-500">Question {{ game.current_question_index + 1 }}</span>
+        <div id="participant-countdown" class="text-3xl font-mono font-bold text-indigo-600 mt-2" data-deadline="{{ game.question_deadline or 0 }}">
+        </div>
         <h2 class="text-xl font-semibold mt-2">{{ game.current_question.text }}</h2>
     </div>
 
@@ -55,7 +57,7 @@
         </p>
     </div>
     {% else %}
-    <form hx-post="/api/estimate" hx-swap="innerHTML" hx-target="#main-content" class="card border rounded-2xl p-6 space-y-6">
+    <form id="estimate-form" hx-post="/api/estimate" hx-swap="innerHTML" hx-target="#main-content" class="card border rounded-2xl p-6 space-y-6">
         <div>
             <label class="block text-sm font-medium mb-2">Your estimate (&mu;)</label>
             <input
@@ -96,6 +98,7 @@
         </div>
 
         <button
+            id="submit-btn"
             type="submit"
             class="w-full py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors"
         >
@@ -104,6 +107,33 @@
     </form>
     {% endif %}
 </div>
+<script>
+(function() {
+    var el = document.getElementById('participant-countdown');
+    if (!el) return;
+    var deadline = parseFloat(el.dataset.deadline) * 1000;
+    var btn = document.getElementById('submit-btn');
+    var expired = false;
+    function tick() {
+        var seconds = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+        el.textContent = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+        el.className = seconds <= 10
+            ? 'text-3xl font-mono font-bold text-red-600 mt-2'
+            : 'text-3xl font-mono font-bold text-indigo-600 mt-2';
+        if (seconds <= 0 && !expired) {
+            expired = true;
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Time\u2019s up';
+                btn.classList.replace('bg-indigo-600', 'bg-slate-400');
+                btn.classList.replace('hover:bg-indigo-700', 'hover:bg-slate-400');
+            }
+        }
+        if (seconds > 0) requestAnimationFrame(tick);
+    }
+    tick();
+})();
+</script>
 
 {% elif game.phase.value == "show_distribution" %}
 <!-- Waiting for reveal -->

@@ -43,11 +43,26 @@
         <div class="text-xl text-slate-500">
             <span class="font-mono text-2xl font-bold text-emerald-600">{{ game.get_current_estimates() | length }}</span> / {{ game.participants | length }} answered
         </div>
-        <div class="text-6xl font-mono font-bold text-indigo-600">
-            0:45
+        <div id="projector-countdown" class="text-6xl font-mono font-bold text-indigo-600" data-deadline="{{ game.question_deadline or 0 }}">
         </div>
     </div>
 </div>
+<script>
+(function() {
+    var el = document.getElementById('projector-countdown');
+    if (!el) return;
+    var deadline = parseFloat(el.dataset.deadline) * 1000;
+    function tick() {
+        var seconds = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+        el.textContent = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+        el.className = seconds <= 10
+            ? 'text-6xl font-mono font-bold text-red-600'
+            : 'text-6xl font-mono font-bold text-indigo-600';
+        if (seconds > 0) requestAnimationFrame(tick);
+    }
+    tick();
+})();
+</script>
 
 {% elif game.phase.value == "show_distribution" %}
 <!-- Show aggregate distribution -->

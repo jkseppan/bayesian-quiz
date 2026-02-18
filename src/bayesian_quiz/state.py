@@ -1,9 +1,13 @@
 """Game state management for Bayesian Quiz."""
 
+import time
 from enum import Enum
 from dataclasses import dataclass, field
 from typing import Callable
 import asyncio
+
+QUESTION_DURATION_SECONDS = 30
+GRACE_PERIOD_SECONDS = 1
 
 
 class GamePhase(str, Enum):
@@ -57,7 +61,15 @@ class GameState:
     questions: list[Question] = field(default_factory=list)
     current_question_index: int = 0
     participants: dict[str, Participant] = field(default_factory=dict)
-    countdown_seconds: int = 60
+    question_started_at: float | None = None
+    question_deadline: float | None = None
+
+    @property
+    def seconds_remaining(self) -> int | None:
+        if self.phase != GamePhase.QUESTION_ACTIVE or self.question_started_at is None:
+            return None
+        elapsed = time.monotonic() - self.question_started_at
+        return max(0, int(QUESTION_DURATION_SECONDS - elapsed))
 
     @property
     def current_question(self) -> Question | None:
@@ -136,6 +148,10 @@ class GameManager:
             raise ValueError("Participant not found")
         if self.state.phase != GamePhase.QUESTION_ACTIVE:
             raise ValueError("Not accepting estimates")
+        if self.state.question_started_at is not None:
+            elapsed = time.monotonic() - self.state.question_started_at
+            if elapsed > QUESTION_DURATION_SECONDS + GRACE_PERIOD_SECONDS:
+                raise ValueError("Time expired")
 
         estimate = Estimate(mu=mu, sigma=sigma)
         self.state.participants[participant_id].estimates[
@@ -158,6 +174,12 @@ class GameManager:
             next_phase = next_phase()
         if next_phase:
             self.state.phase = next_phase
+            if next_phase == GamePhase.QUESTION_ACTIVE:
+                self.state.question_started_at = time.monotonic()
+                self.state.question_deadline = time.time() + QUESTION_DURATION_SECONDS
+            else:
+                self.state.question_started_at = None
+                self.state.question_deadline = None
             await self.broadcast("phase_changed")
 
     def _next_question_or_end(self) -> GamePhase:
