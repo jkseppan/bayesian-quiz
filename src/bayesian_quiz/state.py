@@ -193,7 +193,7 @@ class GameManager:
         """Reset the game to initial state."""
         self.state = GameState()
         self._load_sample_questions()
-        await self.broadcast("game_reset")
+        await self.broadcast("phase_changed")
 
 
 # Global game manager instance
