@@ -87,6 +87,30 @@ class GameState:
             if self.current_question_index in p.estimates
         ]
 
+    def get_question_results(self) -> list[dict]:
+        """Get per-participant results for the current question, sorted by points descending."""
+        qi = self.current_question_index
+        question = self.current_question
+        if question is None:
+            return []
+        results = []
+        for p in self.participants.values():
+            if qi not in p.estimates:
+                continue
+            est = p.estimates[qi]
+            crps = crps_normal(est.mu, est.sigma, question.answer)
+            points = p.scores.get(qi, 0.0)
+            results.append({
+                "nickname": p.nickname,
+                "participant_id": p.id,
+                "mu": est.mu,
+                "sigma": est.sigma,
+                "crps": crps,
+                "points": points,
+            })
+        results.sort(key=lambda r: r["points"], reverse=True)
+        return results
+
 
 class GameManager:
     """Manages game state and broadcasts updates to connected clients."""

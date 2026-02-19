@@ -144,12 +144,34 @@
     </div>
 
     {% if game.current_question_index in participant.estimates %}
-    <div class="card border rounded-2xl p-6">
+    <div class="card border rounded-2xl p-6 mb-4">
         <p class="text-sm text-slate-500 mb-2">Your estimate</p>
         <p class="text-2xl font-mono">
             {{ "%.1f" | format(participant.estimates[game.current_question_index].mu) }}
             &plusmn; {{ "%.1f" | format(participant.estimates[game.current_question_index].sigma) }}
         </p>
+        {% if game.current_question_index in participant.scores %}
+        <p class="text-lg font-mono font-bold text-indigo-600 mt-2">
+            {{ "%.1f" | format(participant.scores[game.current_question_index]) }} pts
+        </p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% set results = game.get_question_results() %}
+    {% if results %}
+    <div class="text-left">
+        <h3 class="text-lg font-bold mb-3 text-center">Question Scores</h3>
+        <div class="space-y-2">
+            {% for r in results %}
+            <div class="card border rounded-xl px-4 py-3 flex items-center gap-3 {% if r.participant_id == participant.id %}ring-2 ring-indigo-500{% endif %}">
+                <span class="text-lg font-bold text-slate-400 w-6">{{ loop.index }}</span>
+                <span class="flex-1 font-semibold truncate">{{ r.nickname }}</span>
+                <span class="font-mono text-sm text-slate-500">{{ "%.1f" | format(r.mu) }}&plusmn;{{ "%.1f" | format(r.sigma) }}</span>
+                <span class="font-mono font-bold text-indigo-600 w-14 text-right">{{ "%.1f" | format(r.points) }}</span>
+            </div>
+            {% endfor %}
+        </div>
     </div>
     {% endif %}
 </div>
