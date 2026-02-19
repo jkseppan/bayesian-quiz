@@ -3,8 +3,9 @@
 import time
 from enum import Enum
 from dataclasses import dataclass, field
-from typing import Callable
 import asyncio
+
+from bayesian_quiz.scoring import crps_normal, crps_to_points
 
 QUESTION_DURATION_SECONDS = 30
 GRACE_PERIOD_SECONDS = 1
@@ -51,6 +52,7 @@ class Question:
     answer: float
     unit: str = ""
     fun_fact: str = ""
+    scale: float = 10.0
 
 
 @dataclass
@@ -102,18 +104,21 @@ class GameManager:
                 answer=34.0,  # First released Feb 1991
                 unit="years",
                 fun_fact="Python was conceived in the late 1980s by Guido van Rossum at CWI in the Netherlands.",
+                scale=10.0,
             ),
             Question(
                 text="How many contributors does scikit-learn have on GitHub?",
                 answer=3100.0,
                 unit="contributors",
                 fun_fact="scikit-learn started as a Google Summer of Code project in 2007.",
+                scale=1000.0,
             ),
             Question(
                 text="What is the mass of the Higgs boson in GeV?",
                 answer=125.25,
                 unit="GeV",
                 fun_fact="The Higgs boson was discovered in 2012 at CERN's Large Hadron Collider.",
+                scale=25.0,
             ),
         ]
 
@@ -178,6 +183,8 @@ class GameManager:
         if callable(next_phase):
             next_phase = next_phase()
         if next_phase:
+            if next_phase == GamePhase.REVEAL_ANSWER:
+                self._score_current_question()
             self.state.phase = next_phase
             if next_phase == GamePhase.QUESTION_ACTIVE:
                 self.state.question_started_at = time.monotonic()
@@ -186,6 +193,18 @@ class GameManager:
                 self.state.question_started_at = None
                 self.state.question_deadline = None
             await self.broadcast("phase_changed")
+
+    def _score_current_question(self) -> None:
+        question = self.state.current_question
+        if question is None:
+            return
+        qi = self.state.current_question_index
+        for participant in self.state.participants.values():
+            if qi not in participant.estimates:
+                continue
+            est = participant.estimates[qi]
+            crps = crps_normal(est.mu, est.sigma, question.answer)
+            participant.scores[qi] = crps_to_points(crps, question.scale)
 
     def _next_question_or_end(self) -> GamePhase:
         """Move to next question or end the game."""
