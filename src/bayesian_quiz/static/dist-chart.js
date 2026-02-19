@@ -60,21 +60,8 @@ function renderDistChart(svgId, estimates, unit, answer) {
     function sy(y) { return pad.top + plotH - (y / yMax) * plotH; }
 
     function buildPath(ys) {
-        var px = [], py = [];
-        for (var i = 0; i < N; i++) { px.push(sx(xs[i])); py.push(sy(ys[i])); }
-        var d = "M" + px[0] + "," + py[0];
-        for (var i = 1; i < N; i++) {
-            var t0x, t0y, t1x, t1y;
-            if (i === 1) { t0x = px[1] - px[0]; t0y = py[1] - py[0]; }
-            else { t0x = 0.5 * (px[i] - px[i - 2]); t0y = 0.5 * (py[i] - py[i - 2]); }
-            if (i === N - 1) { t1x = px[N - 1] - px[N - 2]; t1y = py[N - 1] - py[N - 2]; }
-            else { t1x = 0.5 * (px[i + 1] - px[i - 1]); t1y = 0.5 * (py[i + 1] - py[i - 1]); }
-            var cp1x = px[i - 1] + t0x / 3;
-            var cp1y = py[i - 1] + t0y / 3;
-            var cp2x = px[i] - t1x / 3;
-            var cp2y = py[i] - t1y / 3;
-            d += "C" + cp1x + "," + cp1y + "," + cp2x + "," + cp2y + "," + px[i] + "," + py[i];
-        }
+        var d = "M" + sx(xs[0]) + "," + sy(ys[0]);
+        for (var i = 1; i < N; i++) d += "L" + sx(xs[i]) + "," + sy(ys[i]);
         return d;
     }
 
