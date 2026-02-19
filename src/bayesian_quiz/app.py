@@ -26,7 +26,9 @@ async def _shutdown():
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
-# Serve mockups as static files for now (until we migrate to templates)
+STATIC_DIR = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
 MOCKUPS_DIR = Path(__file__).parent.parent.parent / "mockups"
 if MOCKUPS_DIR.exists():
     app.mount("/mockups", StaticFiles(directory=MOCKUPS_DIR, html=True), name="mockups")

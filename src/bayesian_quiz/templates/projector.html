@@ -4,6 +4,10 @@
 
 {% block body_class %}bg-white text-slate-900 min-h-screen{% endblock %}
 
+{% block head %}
+<script src="/static/dist-chart.js"></script>
+{% endblock %}
+
 {% block body %}
 <div id="main-content" class="min-h-screen flex flex-col" hx-get="/fragments/projector" hx-trigger="phase_changed from:#sse, participant_joined from:#sse" hx-swap="innerHTML">
     {% include "fragments/projector.html" %}

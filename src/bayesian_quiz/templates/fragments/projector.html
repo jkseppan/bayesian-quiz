@@ -69,11 +69,22 @@
 <div class="flex-1 flex flex-col items-center justify-center p-8">
     <h2 class="text-3xl font-semibold mb-8">{{ game.current_question.text }}</h2>
 
+    {% set estimates = game.get_current_estimates() %}
+    {% if estimates %}
+    <svg id="dist-chart" class="w-full max-w-4xl" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+    <p class="text-xl text-slate-500 mt-4">{{ estimates | length }} estimates received</p>
+    <script>
+    (function() {
+        var estimates = [{% for e in estimates %}{"mu":{{e.mu}},"sigma":{{e.sigma}}}{% if not loop.last %},{% endif %}{% endfor %}];
+        var unit = {{ game.current_question.unit | tojson }};
+        renderDistChart("dist-chart", estimates, unit, null);
+    })();
+    </script>
+    {% else %}
     <div class="w-full max-w-4xl h-80 bg-slate-100 rounded-2xl flex items-center justify-center mb-8">
-        <span class="text-slate-400">Distribution visualization</span>
+        <span class="text-slate-400">No estimates received</span>
     </div>
-
-    <p class="text-xl text-slate-500">{{ game.get_current_estimates() | length }} estimates received</p>
+    {% endif %}
 </div>
 
 {% elif game.phase.value == "reveal_answer" %}
@@ -85,7 +96,20 @@
         {{ game.current_question.answer }} {{ game.current_question.unit }}
     </div>
 
-    <p class="text-xl text-slate-600 max-w-2xl text-center">
+    {% set estimates = game.get_current_estimates() %}
+    {% if estimates %}
+    <svg id="reveal-chart" class="w-full max-w-4xl" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+    <script>
+    (function() {
+        var estimates = [{% for e in estimates %}{"mu":{{e.mu}},"sigma":{{e.sigma}}}{% if not loop.last %},{% endif %}{% endfor %}];
+        var unit = {{ game.current_question.unit | tojson }};
+        var answer = {{ game.current_question.answer }};
+        renderDistChart("reveal-chart", estimates, unit, answer);
+    })();
+    </script>
+    {% endif %}
+
+    <p class="text-xl text-slate-600 max-w-2xl text-center mt-4">
         {{ game.current_question.fun_fact }}
     </p>
 </div>
