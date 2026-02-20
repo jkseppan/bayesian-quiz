@@ -157,17 +157,17 @@ def generate_estimate(answer: float) -> tuple[float, float]:
     return round(mu, 2), round(sigma, 2)
 
 
-async def run_player(player_index: int, registered: asyncio.Event):
+async def run_player(player_index: int, slug: str, registered: asyncio.Event):
     nickname = generate_nickname(player_index)
 
     async with httpx.AsyncClient(base_url=BASE_URL, timeout=None) as client:
-        resp = await client.post("/api/register", data={"nickname": nickname})
+        resp = await client.post(f"/api/register?{slug}", data={"nickname": nickname})
         cookies = dict(resp.cookies)
         registered.set()
 
         submitted_for_question = -1
 
-        async with client.stream("GET", "/events", cookies=cookies) as stream:
+        async with client.stream("GET", f"/events?{slug}", cookies=cookies) as stream:
             buffer = ""
             async for chunk in stream.aiter_text():
                 buffer += chunk
@@ -190,7 +190,7 @@ async def run_player(player_index: int, registered: asyncio.Event):
                             mu, sigma = generate_estimate(answer_hint)
                             await asyncio.sleep(random.uniform(0.5, 5.0))
                             await client.post(
-                                "/api/estimate",
+                                f"/api/estimate?{slug}",
                                 data={"mu": str(mu), "sigma": str(sigma)},
                                 cookies=cookies,
                             )
@@ -201,6 +201,8 @@ async def main():
     parser = argparse.ArgumentParser(description="Simulate players for Bayesian Quiz")
     parser.add_argument("-n", "--num-players", type=int, default=20,
                         help="Number of players (max 150)")
+    parser.add_argument("-s", "--slug", default="sample",
+                        help="Quiz slug (default: sample)")
     parser.add_argument("--stagger", type=float, default=0.05,
                         help="Seconds between player joins")
     args = parser.parse_args()
@@ -213,7 +215,7 @@ async def main():
     for i in range(num_players):
         ev = asyncio.Event()
         events.append(ev)
-        tasks.append(asyncio.create_task(run_player(i, ev)))
+        tasks.append(asyncio.create_task(run_player(i, args.slug, ev)))
         await asyncio.sleep(args.stagger)
         await ev.wait()
         if (i + 1) % 10 == 0:
