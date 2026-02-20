@@ -135,6 +135,7 @@ class GameManager:
         self.state = GameState(questions=list(questions))
         self._subscribers: list[asyncio.Queue[str]] = []
         self._auto_advance_task: asyncio.Task | None = None
+        self._shutting_down = False
 
     def subscribe(self) -> asyncio.Queue[str]:
         """Subscribe to state updates. Returns a queue that receives update events."""
@@ -154,6 +155,7 @@ class GameManager:
 
     async def shutdown(self) -> None:
         """Signal all subscribers to disconnect."""
+        self._shutting_down = True
         for queue in self._subscribers:
             await queue.put(None)
 

@@ -105,12 +105,12 @@ async def events(request: Request):
             yield "retry: 500\n"
             yield _sse_message("connected", json.dumps({"phase": game.state.phase.value}))
 
-            while True:
+            while not game._shutting_down:
                 if await request.is_disconnected():
                     break
 
                 try:
-                    event = await asyncio.wait_for(queue.get(), timeout=30.0)
+                    event = await asyncio.wait_for(queue.get(), timeout=5.0)
                     if event is None:
                         break
                     yield _sse_message(event, json.dumps(_serialize_state(game)))
