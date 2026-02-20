@@ -49,11 +49,23 @@ def _get_slug(request: Request) -> str | None:
     return None
 
 
+class _BadSlug(Exception):
+    pass
+
+
 def _get_game(request: Request) -> tuple[str, GameManager]:
     slug = _get_slug(request)
     if not slug:
-        raise ValueError("Missing quiz slug")
-    return slug, get_or_create_game(slug)
+        raise _BadSlug("Missing quiz slug")
+    try:
+        return slug, get_or_create_game(slug)
+    except FileNotFoundError:
+        raise _BadSlug(f"Quiz not found: {slug}")
+
+
+@app.exception_handler(_BadSlug)
+async def _bad_slug_handler(request: Request, exc: _BadSlug):
+    return RedirectResponse(url="/", status_code=302)
 
 
 # --- SSE Endpoint ---
