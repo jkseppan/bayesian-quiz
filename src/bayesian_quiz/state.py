@@ -18,6 +18,7 @@ class GamePhase(str, Enum):
     QUESTION_ACTIVE = "question_active"
     SHOW_DISTRIBUTION = "show_distribution"
     REVEAL_ANSWER = "reveal_answer"
+    QUESTION_SCORES = "question_scores"
     LEADERBOARD = "leaderboard"
     END = "end"
 
@@ -199,7 +200,8 @@ class GameManager:
             GamePhase.LOBBY: GamePhase.QUESTION_ACTIVE,
             GamePhase.QUESTION_ACTIVE: GamePhase.SHOW_DISTRIBUTION,
             GamePhase.SHOW_DISTRIBUTION: GamePhase.REVEAL_ANSWER,
-            GamePhase.REVEAL_ANSWER: GamePhase.LEADERBOARD,
+            GamePhase.REVEAL_ANSWER: GamePhase.QUESTION_SCORES,
+            GamePhase.QUESTION_SCORES: GamePhase.LEADERBOARD,
             GamePhase.LEADERBOARD: self._next_question_or_end,
         }
 

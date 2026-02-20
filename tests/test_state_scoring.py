@@ -28,6 +28,7 @@ async def advance_to(gm: GameManager, target: GamePhase):
         GamePhase.QUESTION_ACTIVE,
         GamePhase.SHOW_DISTRIBUTION,
         GamePhase.REVEAL_ANSWER,
+        GamePhase.QUESTION_SCORES,
         GamePhase.LEADERBOARD,
     ]
     while gm.state.phase != target:

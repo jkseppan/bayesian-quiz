@@ -157,21 +157,30 @@
         {% endif %}
     </div>
     {% endif %}
+</div>
+
+{% elif game.phase.value == "question_scores" %}
+<!-- Player's rank for this question -->
+<div class="text-center mt-8">
+    <h2 class="text-xl font-semibold mb-6">Question {{ game.current_question_index + 1 }} Scores</h2>
 
     {% set results = game.get_question_results() %}
-    {% if results %}
-    <div class="text-left">
-        <h3 class="text-lg font-bold mb-3 text-center">Question Scores</h3>
-        <div class="space-y-2">
-            {% for r in results %}
-            <div class="card border rounded-xl px-4 py-3 flex items-center gap-3 {% if r.participant_id == participant.id %}ring-2 ring-indigo-500{% endif %}">
-                <span class="text-lg font-bold text-slate-400 w-6">{{ loop.index }}</span>
-                <span class="flex-1 font-semibold truncate">{{ r.nickname }}</span>
-                <span class="font-mono text-sm text-slate-500">{{ "%.1f" | format(r.mu) }}&plusmn;{{ "%.1f" | format(r.sigma) }}</span>
-                <span class="font-mono font-bold text-indigo-600 w-14 text-right">{{ "%.1f" | format(r.points) }}</span>
-            </div>
-            {% endfor %}
-        </div>
+    {% set ns = namespace(rank=none) %}
+    {% for r in results %}
+        {% if r.participant_id == participant.id %}{% set ns.rank = loop.index %}{% endif %}
+    {% endfor %}
+
+    {% if ns.rank is not none %}
+    <div class="card border rounded-2xl p-6">
+        <p class="text-5xl font-bold text-indigo-600 mb-2">#{{ ns.rank }}</p>
+        <p class="text-slate-500">out of {{ results | length }} players</p>
+        <p class="text-2xl font-mono font-bold text-indigo-600 mt-4">
+            {{ "%.1f" | format(participant.scores[game.current_question_index]) }} pts
+        </p>
+    </div>
+    {% else %}
+    <div class="card border rounded-2xl p-6">
+        <p class="text-slate-500">No estimate submitted</p>
     </div>
     {% endif %}
 </div>
