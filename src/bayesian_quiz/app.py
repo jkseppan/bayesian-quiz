@@ -7,22 +7,29 @@ from typing import Annotated
 from uuid import uuid4
 
 from fastapi import FastAPI, Request, Form, Cookie
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from .state import game, GamePhase, QUESTION_DURATION_SECONDS, GRACE_PERIOD_SECONDS
+from .state import (
+    get_or_create_game,
+    games,
+    GameManager,
+    GamePhase,
+    QUESTION_DURATION_SECONDS,
+    GRACE_PERIOD_SECONDS,
+)
+from .questions import list_quizzes
 
 app = FastAPI(title="Bayesian Quiz")
-
-_auto_advance_task: asyncio.Task | None = None
 
 
 @app.on_event("shutdown")
 async def _shutdown():
-    await game.shutdown()
+    for gm in games.values():
+        await gm.shutdown()
 
-# Templates setup
+
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
@@ -34,6 +41,23 @@ if MOCKUPS_DIR.exists():
     app.mount("/mockups", StaticFiles(directory=MOCKUPS_DIR, html=True), name="mockups")
 
 
+def _get_slug(request: Request) -> str | None:
+    """Extract slug from query string (first key without a value, or 'slug' param)."""
+    if "slug" in request.query_params:
+        return request.query_params["slug"]
+    for key, value in request.query_params.items():
+        if value == "":
+            return key
+    return None
+
+
+def _get_game(request: Request) -> tuple[str, GameManager]:
+    slug = _get_slug(request)
+    if not slug:
+        raise ValueError("Missing quiz slug")
+    return slug, get_or_create_game(slug)
+
+
 # --- SSE Endpoint ---
 
 
@@ -41,40 +65,7 @@ def _sse_message(event: str, data: str) -> str:
     return f"event: {event}\ndata: {data}\n\n"
 
 
-@app.get("/events")
-async def events(request: Request):
-    """SSE endpoint for real-time state updates."""
-
-    async def event_generator():
-        queue = game.subscribe()
-        try:
-            yield "retry: 500\n"
-            yield _sse_message("connected", json.dumps({"phase": game.state.phase.value}))
-
-            while True:
-                if await request.is_disconnected():
-                    break
-
-                try:
-                    event = await asyncio.wait_for(queue.get(), timeout=30.0)
-                    if event is None:
-                        break
-                    yield _sse_message(event, json.dumps(_serialize_state()))
-                except asyncio.TimeoutError:
-                    yield ": keepalive\n\n"
-
-        finally:
-            game.unsubscribe(queue)
-
-    return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
-    )
-
-
-def _serialize_state() -> dict:
-    """Serialize game state for JSON transmission."""
+def _serialize_state(game: GameManager) -> dict:
     state = game.state
     return {
         "phase": state.phase.value,
@@ -94,22 +85,57 @@ def _serialize_state() -> dict:
     }
 
 
+@app.get("/events")
+async def events(request: Request):
+    slug, game = _get_game(request)
+
+    async def event_generator():
+        queue = game.subscribe()
+        try:
+            yield "retry: 500\n"
+            yield _sse_message("connected", json.dumps({"phase": game.state.phase.value}))
+
+            while True:
+                if await request.is_disconnected():
+                    break
+
+                try:
+                    event = await asyncio.wait_for(queue.get(), timeout=30.0)
+                    if event is None:
+                        break
+                    yield _sse_message(event, json.dumps(_serialize_state(game)))
+                except asyncio.TimeoutError:
+                    yield ": keepalive\n\n"
+
+        finally:
+            game.unsubscribe(queue)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
 # --- Page Routes ---
 
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    """Landing page with links to different views."""
+    slug = _get_slug(request)
+    if slug:
+        return RedirectResponse(url=f"/play?{slug}", status_code=302)
+    available = list_quizzes()
     return templates.TemplateResponse(
-        request, "index.html", {"game": game.state}
+        request, "index.html", {"quizzes": available}
     )
 
 
 @app.get("/projector", response_class=HTMLResponse)
 async def projector(request: Request):
-    """Projector view - shown on the big screen."""
+    slug, game = _get_game(request)
     return templates.TemplateResponse(
-        request, "projector.html", {"game": game.state}
+        request, "projector.html", {"game": game.state, "slug": slug}
     )
 
 
@@ -117,25 +143,25 @@ async def projector(request: Request):
 async def participant(
     request: Request, participant_id: Annotated[str | None, Cookie()] = None
 ):
-    """Participant view - for players on their phones."""
-    participant = None
+    slug, game = _get_game(request)
+    p = None
     if participant_id:
-        participant = game.state.participants.get(participant_id)
+        p = game.state.participants.get(participant_id)
 
     return templates.TemplateResponse(
         request,
         "participant.html",
-        {"game": game.state, "participant": participant},
+        {"game": game.state, "participant": p, "slug": slug},
     )
 
 
 @app.get("/control", response_class=HTMLResponse)
 async def quizmaster(request: Request):
-    """Quizmaster control panel."""
+    slug, game = _get_game(request)
     return templates.TemplateResponse(
         request,
         "quizmaster.html",
-        {"game": game.state},
+        {"game": game.state, "slug": slug},
     )
 
 
@@ -144,11 +170,11 @@ async def quizmaster(request: Request):
 
 @app.get("/fragments/projector", response_class=HTMLResponse)
 async def fragment_projector(request: Request):
-    """Get projector fragment for HTMX updates."""
+    slug, game = _get_game(request)
     return templates.TemplateResponse(
         request,
         "fragments/projector.html",
-        {"game": game.state},
+        {"game": game.state, "slug": slug},
     )
 
 
@@ -156,25 +182,25 @@ async def fragment_projector(request: Request):
 async def fragment_participant(
     request: Request, participant_id: Annotated[str | None, Cookie()] = None
 ):
-    """Get participant fragment for HTMX updates."""
-    participant = None
+    slug, game = _get_game(request)
+    p = None
     if participant_id:
-        participant = game.state.participants.get(participant_id)
+        p = game.state.participants.get(participant_id)
 
     return templates.TemplateResponse(
         request,
         "fragments/participant.html",
-        {"game": game.state, "participant": participant},
+        {"game": game.state, "participant": p, "slug": slug},
     )
 
 
 @app.get("/fragments/quizmaster", response_class=HTMLResponse)
 async def fragment_quizmaster(request: Request):
-    """Get quizmaster fragment for HTMX updates."""
+    slug, game = _get_game(request)
     return templates.TemplateResponse(
         request,
         "fragments/quizmaster.html",
-        {"game": game.state},
+        {"game": game.state, "slug": slug},
     )
 
 
@@ -186,20 +212,20 @@ async def register(
     request: Request,
     nickname: Annotated[str, Form()],
 ):
-    """Register a new participant."""
+    slug, game = _get_game(request)
     participant_id = str(uuid4())
     try:
-        participant = await game.add_participant(participant_id, nickname)
+        p = await game.add_participant(participant_id, nickname)
     except ValueError as e:
         return templates.TemplateResponse(
             request,
             "fragments/participant.html",
-            {"game": game.state, "participant": None, "error": str(e)},
+            {"game": game.state, "participant": None, "error": str(e), "slug": slug},
         )
     response = templates.TemplateResponse(
         request,
         "fragments/participant.html",
-        {"game": game.state, "participant": participant},
+        {"game": game.state, "participant": p, "slug": slug},
     )
     response.set_cookie(key="participant_id", value=participant_id, httponly=True)
     return response
@@ -212,12 +238,12 @@ async def submit_estimate(
     sigma: Annotated[float, Form()],
     participant_id: Annotated[str | None, Cookie()] = None,
 ):
-    """Submit an estimate for the current question."""
+    slug, game = _get_game(request)
     if not participant_id:
         return HTMLResponse("<p>Not registered</p>", status_code=401)
 
-    participant = game.state.participants.get(participant_id)
-    if not participant:
+    p = game.state.participants.get(participant_id)
+    if not p:
         return HTMLResponse("<p>Participant not found</p>", status_code=404)
 
     try:
@@ -227,40 +253,39 @@ async def submit_estimate(
     return templates.TemplateResponse(
         request,
         "fragments/participant.html",
-        {"game": game.state, "participant": participant},
+        {"game": game.state, "participant": p, "slug": slug},
     )
 
 
-async def _auto_advance_after_timer(question_index: int) -> None:
-    await asyncio.sleep(QUESTION_DURATION_SECONDS + GRACE_PERIOD_SECONDS)
-    if (
-        game.state.phase == GamePhase.QUESTION_ACTIVE
-        and game.state.current_question_index == question_index
-    ):
-        await game.advance_phase()
+def _schedule_auto_advance(game: GameManager) -> None:
+    if game._auto_advance_task and not game._auto_advance_task.done():
+        game._auto_advance_task.cancel()
 
+    async def _auto_advance(question_index: int) -> None:
+        await asyncio.sleep(QUESTION_DURATION_SECONDS + GRACE_PERIOD_SECONDS)
+        if (
+            game.state.phase == GamePhase.QUESTION_ACTIVE
+            and game.state.current_question_index == question_index
+        ):
+            await game.advance_phase()
 
-def _schedule_auto_advance() -> None:
-    global _auto_advance_task
-    if _auto_advance_task and not _auto_advance_task.done():
-        _auto_advance_task.cancel()
-    _auto_advance_task = asyncio.create_task(
-        _auto_advance_after_timer(game.state.current_question_index)
+    game._auto_advance_task = asyncio.create_task(
+        _auto_advance(game.state.current_question_index)
     )
 
 
 @app.post("/api/advance")
-async def advance():
-    """Advance to the next phase (quizmaster only)."""
+async def advance(request: Request):
+    slug, game = _get_game(request)
     await game.advance_phase()
     if game.state.phase == GamePhase.QUESTION_ACTIVE:
-        _schedule_auto_advance()
+        _schedule_auto_advance(game)
     return {"phase": game.state.phase.value}
 
 
 @app.post("/api/reset")
-async def reset():
-    """Reset the game (quizmaster only)."""
+async def reset(request: Request):
+    slug, game = _get_game(request)
     await game.reset()
     return {"status": "reset"}
 
@@ -269,7 +294,6 @@ async def reset():
 
 
 def main() -> None:
-    """Run the development server."""
     import uvicorn
 
     uvicorn.run(

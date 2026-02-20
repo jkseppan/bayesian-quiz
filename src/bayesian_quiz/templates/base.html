@@ -19,10 +19,11 @@
     <div id="sse" hidden></div>
     {% block body %}{% endblock %}
     {% block scripts %}{% endblock %}
+    {% if slug is defined and slug %}
     <script>
     (function() {
         var sse = document.getElementById('sse');
-        var source = new EventSource('/events');
+        var source = new EventSource('/events?{{ slug }}');
         ['phase_changed', 'participant_joined', 'estimate_submitted', 'connected'].forEach(function(evt) {
             source.addEventListener(evt, function() {
                 sse.dispatchEvent(new CustomEvent(evt, {bubbles: true}));
@@ -30,5 +31,6 @@
         });
     })();
     </script>
+    {% endif %}
 </body>
 </html>

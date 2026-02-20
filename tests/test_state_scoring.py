@@ -14,12 +14,10 @@ from bayesian_quiz.state import (
 
 @pytest.fixture
 def gm():
-    manager = GameManager()
-    manager.state.questions = [
+    return GameManager([
         Question(text="Q1", answer=100.0, scale=50.0),
         Question(text="Q2", answer=200.0, scale=100.0),
-    ]
-    return manager
+    ])
 
 
 async def advance_to(gm: GameManager, target: GamePhase):

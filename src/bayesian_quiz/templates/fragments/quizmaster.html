@@ -75,7 +75,7 @@
 <!-- Advance button -->
 {% if game.phase.value != "end" %}
 <button
-    hx-post="/api/advance"
+    hx-post="/api/advance?{{ slug }}"
     hx-swap="none"
     class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-lg font-semibold transition-colors"
 >

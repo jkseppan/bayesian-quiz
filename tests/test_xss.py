@@ -9,7 +9,7 @@ import uvicorn
 from playwright.sync_api import sync_playwright
 
 from bayesian_quiz.app import app
-from bayesian_quiz.state import game, GameState
+from bayesian_quiz.state import games, get_or_create_game
 
 
 def _free_port() -> int:
@@ -35,8 +35,8 @@ def server():
 @pytest.fixture(autouse=True)
 def _reset_game():
     """Reset game state before each test."""
-    game.state = GameState()
-    game._load_sample_questions()
+    games.clear()
+    get_or_create_game("sample")
 
 
 XSS_NICKNAMES = [
@@ -92,7 +92,7 @@ class TestXSSNicknames:
         page.on("dialog", lambda d: (dialog_fired.append(d.message), d.dismiss()))
 
         try:
-            page.goto(f"{server}/play")
+            page.goto(f"{server}/play?sample")
             _register(page, nickname)
 
             assert not dialog_fired, f"Alert dialog triggered by nickname: {dialog_fired}"
@@ -113,11 +113,11 @@ class TestXSSNicknames:
 
         try:
             reg_page = browser_ctx.new_page()
-            reg_page.goto(f"{server}/play")
+            reg_page.goto(f"{server}/play?sample")
             _register(reg_page, '<img src=x onerror=alert("pwned")>')
             reg_page.close()
 
-            page.goto(f"{server}/projector")
+            page.goto(f"{server}/projector?sample")
             page.wait_for_timeout(500)
 
             assert not dialog_fired, f"Alert triggered on projector: {dialog_fired}"
@@ -133,11 +133,11 @@ class TestXSSNicknames:
         page = browser_ctx.new_page()
         try:
             reg_page = browser_ctx.new_page()
-            reg_page.goto(f"{server}/play")
+            reg_page.goto(f"{server}/play?sample")
             _register(reg_page, '<script>document.title="hacked"</script>')
             reg_page.close()
 
-            page.goto(f"{server}/projector")
+            page.goto(f"{server}/projector?sample")
             page.wait_for_timeout(500)
 
             assert page.title() != "hacked"
@@ -155,7 +155,7 @@ class TestXSSNicknames:
         """Literal &lt; in nickname stays as visible text, not decoded to <."""
         page = browser_ctx.new_page()
         try:
-            page.goto(f"{server}/play")
+            page.goto(f"{server}/play?sample")
             _register(page, "&lt;b&gt;bold&lt;/b&gt;")
 
             text = page.text_content("#main-content")

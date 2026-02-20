@@ -1,0 +1,17 @@
+Question: How many years old is Python today?
+Answer: 34.0
+Unit: years
+Scale: 10.0
+Factoid: Python was conceived in the late 1980s by Guido van Rossum at CWI in the Netherlands.
+
+Question: How many contributors does scikit-learn have on GitHub?
+Answer: 3100.0
+Unit: contributors
+Scale: 1000.0
+Factoid: scikit-learn started as a Google Summer of Code project in 2007.
+
+Question: What is the mass of the Higgs boson in GeV?
+Answer: 125.25
+Unit: GeV
+Scale: 25.0
+Factoid: The Higgs boson was discovered in 2012 at CERN's Large Hadron Collider.

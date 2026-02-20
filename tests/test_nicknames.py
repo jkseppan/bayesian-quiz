@@ -110,9 +110,7 @@ class TestSanitizeNickname:
 class TestDuplicateNicknames:
     @pytest.fixture
     def gm(self):
-        manager = GameManager()
-        manager.state.questions = []
-        return manager
+        return GameManager([])
 
     @pytest.mark.anyio
     async def test_duplicate_rejected(self, gm):

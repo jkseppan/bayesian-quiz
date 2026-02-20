@@ -131,36 +131,10 @@ class GameState:
 class GameManager:
     """Manages game state and broadcasts updates to connected clients."""
 
-    def __init__(self) -> None:
-        self.state = GameState()
+    def __init__(self, questions: list[Question]) -> None:
+        self.state = GameState(questions=list(questions))
         self._subscribers: list[asyncio.Queue[str]] = []
-        self._load_sample_questions()
-
-    def _load_sample_questions(self) -> None:
-        """Load sample questions for testing."""
-        self.state.questions = [
-            Question(
-                text="How many years old is Python today?",
-                answer=34.0,  # First released Feb 1991
-                unit="years",
-                fun_fact="Python was conceived in the late 1980s by Guido van Rossum at CWI in the Netherlands.",
-                scale=10.0,
-            ),
-            Question(
-                text="How many contributors does scikit-learn have on GitHub?",
-                answer=3100.0,
-                unit="contributors",
-                fun_fact="scikit-learn started as a Google Summer of Code project in 2007.",
-                scale=1000.0,
-            ),
-            Question(
-                text="What is the mass of the Higgs boson in GeV?",
-                answer=125.25,
-                unit="GeV",
-                fun_fact="The Higgs boson was discovered in 2012 at CERN's Large Hadron Collider.",
-                scale=25.0,
-            ),
-        ]
+        self._auto_advance_task: asyncio.Task | None = None
 
     def subscribe(self) -> asyncio.Queue[str]:
         """Subscribe to state updates. Returns a queue that receives update events."""
@@ -261,11 +235,17 @@ class GameManager:
         return GamePhase.END
 
     async def reset(self) -> None:
-        """Reset the game to initial state."""
-        self.state = GameState()
-        self._load_sample_questions()
+        """Reset the game to initial state, keeping the same questions."""
+        questions = self.state.questions
+        self.state = GameState(questions=questions)
         await self.broadcast("phase_changed")
 
 
-# Global game manager instance
-game = GameManager()
+games: dict[str, GameManager] = {}
+
+
+def get_or_create_game(slug: str) -> GameManager:
+    if slug not in games:
+        from bayesian_quiz.questions import load_quiz
+        games[slug] = GameManager(load_quiz(slug))
+    return games[slug]

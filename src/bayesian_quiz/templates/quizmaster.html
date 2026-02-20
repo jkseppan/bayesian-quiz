@@ -9,7 +9,7 @@
     <div class="flex items-center justify-between mb-8">
         <h1 class="text-2xl font-bold">Quizmaster Control</h1>
         <button
-            hx-post="/api/reset"
+            hx-post="/api/reset?{{ slug }}"
             hx-swap="none"
             class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition-colors"
         >
@@ -17,7 +17,7 @@
         </button>
     </div>
 
-    <div id="control-panel" hx-get="/fragments/quizmaster" hx-trigger="phase_changed from:#sse, participant_joined from:#sse, estimate_submitted from:#sse" hx-swap="innerHTML">
+    <div id="control-panel" hx-get="/fragments/quizmaster?{{ slug }}" hx-trigger="phase_changed from:#sse, participant_joined from:#sse, estimate_submitted from:#sse" hx-swap="innerHTML">
         {% include "fragments/quizmaster.html" %}
     </div>
 </div>
