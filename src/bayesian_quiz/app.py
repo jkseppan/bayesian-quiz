@@ -188,8 +188,14 @@ async def register(
 ):
     """Register a new participant."""
     participant_id = str(uuid4())
-    participant = await game.add_participant(participant_id, nickname)
-    # Return the participant fragment so HTMX can swap it in
+    try:
+        participant = await game.add_participant(participant_id, nickname)
+    except ValueError as e:
+        return templates.TemplateResponse(
+            request,
+            "fragments/participant.html",
+            {"game": game.state, "participant": None, "error": str(e)},
+        )
     response = templates.TemplateResponse(
         request,
         "fragments/participant.html",

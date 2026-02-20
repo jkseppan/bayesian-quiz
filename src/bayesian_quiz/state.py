@@ -1,6 +1,8 @@
 """Game state management for Bayesian Quiz."""
 
+import re
 import time
+import unicodedata
 from enum import Enum
 from dataclasses import dataclass, field
 import asyncio
@@ -8,6 +10,19 @@ import asyncio
 from bayesian_quiz.scoring import crps_normal, crps_to_points
 
 QUESTION_DURATION_SECONDS = 30
+_WHITESPACE_RUN = re.compile(r"\s+")
+
+
+def sanitize_nickname(raw: str) -> str:
+    """Normalize and sanitize a nickname.
+
+    NFKC normalization collapses fullwidth/compatibility characters.
+    Stripping Unicode category Cf removes zero-width chars, RTL/LTR marks,
+    directional overrides, and other invisible format characters.
+    """
+    normalized = unicodedata.normalize("NFKC", raw)
+    cleaned = "".join(ch for ch in normalized if unicodedata.category(ch) != "Cf")
+    return _WHITESPACE_RUN.sub(" ", cleaned).strip()
 GRACE_PERIOD_SECONDS = 1
 
 
@@ -170,6 +185,12 @@ class GameManager:
 
     async def add_participant(self, participant_id: str, nickname: str) -> Participant:
         """Add a new participant to the game."""
+        nickname = sanitize_nickname(nickname)
+        if not nickname:
+            raise ValueError("Nickname cannot be empty")
+        existing = {p.nickname.casefold() for p in self.state.participants.values()}
+        if nickname.casefold() in existing:
+            raise ValueError("Nickname already taken")
         participant = Participant(id=participant_id, nickname=nickname)
         self.state.participants[participant_id] = participant
         await self.broadcast("participant_joined")
