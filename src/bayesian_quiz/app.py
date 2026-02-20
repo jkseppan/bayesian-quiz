@@ -1,13 +1,15 @@
 """FastAPI application for Bayesian Quiz."""
 
 import asyncio
+import io
 import json
 from pathlib import Path
 from typing import Annotated
 from uuid import uuid4
 
+import qrcode
 from fastapi import FastAPI, Request, Form, Cookie
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -298,6 +300,21 @@ async def reset(request: Request):
     slug, game = _get_game(request)
     await game.reset()
     return {"status": "reset"}
+
+
+JOIN_DOMAIN = "pydata.win"
+
+
+@app.get("/api/qr")
+async def qr_code(request: Request):
+    slug = _get_slug(request)
+    if not slug:
+        return Response(status_code=404)
+    url = f"https://{JOIN_DOMAIN}/?{slug}"
+    img = qrcode.make(url, border=2)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return Response(content=buf.getvalue(), media_type="image/png")
 
 
 # --- Dev server entry point ---

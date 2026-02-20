@@ -5,10 +5,15 @@
         Bayesian Quiz
     </h1>
 
-    <p class="text-2xl text-slate-600 mb-2">Join at <span class="font-mono font-semibold text-indigo-600">pydata.win/?{{ slug }}</span></p>
-
-    <div class="text-xl text-slate-500 mb-8">
-        <span class="font-mono text-3xl font-bold text-indigo-600">{{ game.participants | length }}</span> players joined
+    <div class="flex items-center gap-8 mb-6">
+        <img src="/api/qr?{{ slug }}" alt="QR code" style="image-rendering: pixelated" class="w-48 h-48 rounded-xl shadow-lg">
+        <div class="text-left">
+            <p class="text-2xl text-slate-600 mb-1">Scan to join</p>
+            <p class="font-mono font-semibold text-indigo-600 text-xl">pydata.win/?{{ slug }}</p>
+            <p class="text-xl text-slate-500 mt-4">
+                <span class="font-mono text-3xl font-bold text-indigo-600">{{ game.participants | length }}</span> players joined
+            </p>
+        </div>
     </div>
 
     {% if game.participants %}
@@ -177,4 +182,10 @@
     <p class="text-2xl text-slate-600">Thanks for playing</p>
 </div>
 
+{% endif %}
+
+{% if game.phase.value != "lobby" %}
+<div class="fixed top-4 right-4">
+    <img src="/api/qr?{{ slug }}" alt="QR code" style="image-rendering: pixelated" class="w-16 h-16 rounded shadow-md">
+</div>
 {% endif %}
