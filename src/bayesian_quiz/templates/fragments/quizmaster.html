@@ -32,21 +32,14 @@
     {% elif game.phase.value == "question_active" %}
     <h2 class="text-lg font-semibold mb-2">Current Question</h2>
     <p class="text-slate-300 mb-4">{{ game.current_question.text }}</p>
-    <div class="flex items-center gap-4">
-        <div>
-            <p class="text-slate-400 text-sm">Answer (hidden)</p>
-            <p class="font-mono text-emerald-400">{{ game.current_question.answer }} {{ game.current_question.unit }}</p>
-        </div>
-        <div>
-            <p class="text-slate-400 text-sm">Responses</p>
-            <p class="font-mono">{{ game.get_current_estimates() | length }} / {{ game.participants | length }}</p>
-        </div>
+    <div>
+        <p class="text-slate-400 text-sm">Responses</p>
+        <p class="font-mono">{{ game.get_current_estimates() | length }} / {{ game.participants | length }}</p>
     </div>
 
     {% elif game.phase.value == "show_distribution" %}
     <h2 class="text-lg font-semibold mb-2">Distribution Shown</h2>
     <p class="text-slate-300">{{ game.get_current_estimates() | length }} estimates displayed</p>
-    <p class="text-slate-400 text-sm mt-2">Answer still hidden: {{ game.current_question.answer }} {{ game.current_question.unit }}</p>
 
     {% elif game.phase.value == "reveal_answer" %}
     <h2 class="text-lg font-semibold mb-2">Answer Revealed</h2>
