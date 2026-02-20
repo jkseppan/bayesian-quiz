@@ -36,4 +36,4 @@ def crps_normal(mean: float, stdev: float, true_value: float) -> float:
 
 def crps_to_points(crps: float, scale: float) -> float:
     """Convert CRPS (lower-is-better) to points (higher-is-better) on a 0-100 scale."""
-    return max(0.0, 100.0 * (1 - crps / scale))
+    return 100.0 * math.exp(-crps / scale)

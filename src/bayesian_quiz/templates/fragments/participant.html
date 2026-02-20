@@ -45,6 +45,7 @@
 {% set already_answered = game.current_question_index in participant.estimates %}
 <div class="mt-4">
     <div class="text-center mb-6">
+        <p class="text-sm text-slate-500 mb-1">{{ participant.nickname }}</p>
         <span class="text-sm text-slate-500">Question {{ game.current_question_index + 1 }}</span>
         <div id="participant-countdown" class="text-3xl font-mono font-bold text-indigo-600 mt-2" data-deadline="{{ game.question_deadline or 0 }}">
         </div>
@@ -130,6 +131,7 @@
 {% elif game.phase.value == "show_distribution" %}
 <!-- Waiting for reveal -->
 <div class="text-center mt-16">
+    <p class="text-sm text-slate-500 mb-4">{{ participant.nickname }}</p>
     <div class="text-6xl mb-4">&#129300;</div>
     <h2 class="text-xl font-semibold mb-2">Time's up!</h2>
     <p class="text-slate-500">Look at the projector to see how everyone answered...</p>
@@ -138,6 +140,7 @@
 {% elif game.phase.value == "reveal_answer" %}
 <!-- Show result -->
 <div class="text-center mt-8">
+    <p class="text-sm text-slate-500 mb-2">{{ participant.nickname }}</p>
     <h2 class="text-xl font-semibold mb-4">{{ game.current_question.text }}</h2>
 
     <div class="card border rounded-2xl p-6 mb-4">
@@ -166,6 +169,7 @@
 {% elif game.phase.value == "question_scores" %}
 <!-- Player's rank for this question -->
 <div class="text-center mt-8">
+    <p class="text-sm text-slate-500 mb-2">{{ participant.nickname }}</p>
     <h2 class="text-xl font-semibold mb-6">Question {{ game.current_question_index + 1 }} Scores</h2>
 
     {% set results = game.get_question_results() %}
@@ -192,6 +196,7 @@
 {% elif game.phase.value == "leaderboard" %}
 <!-- Leaderboard with position -->
 <div class="mt-8">
+    <p class="text-sm text-slate-500 text-center mb-2">{{ participant.nickname }}</p>
     <h2 class="text-2xl font-bold text-center mb-6">Leaderboard</h2>
 
     <div class="space-y-3">

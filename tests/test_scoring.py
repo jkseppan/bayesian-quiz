@@ -88,14 +88,20 @@ class TestCrpsToPoints:
     def test_zero_crps_gives_100_points(self):
         assert crps_to_points(0.0, 10.0) == 100.0
 
-    def test_crps_equals_scale_gives_0_points(self):
-        assert crps_to_points(10.0, 10.0) == 0.0
+    def test_crps_equals_scale(self):
+        assert crps_to_points(10.0, 10.0) == pytest.approx(100.0 / math.e)
 
-    def test_crps_exceeds_scale_clamped_to_zero(self):
-        assert crps_to_points(20.0, 10.0) == 0.0
+    def test_crps_exceeds_scale_still_positive(self):
+        assert crps_to_points(20.0, 10.0) > 0.0
 
-    def test_half_scale_gives_50_points(self):
-        assert crps_to_points(5.0, 10.0) == 50.0
+    def test_large_crps_approaches_zero(self):
+        assert crps_to_points(100.0, 10.0) < 0.01
+
+    def test_monotonically_decreasing(self):
+        p1 = crps_to_points(1.0, 10.0)
+        p2 = crps_to_points(5.0, 10.0)
+        p3 = crps_to_points(10.0, 10.0)
+        assert p1 > p2 > p3 > 0
 
     def test_result_is_float(self):
         assert isinstance(crps_to_points(3.0, 10.0), float)

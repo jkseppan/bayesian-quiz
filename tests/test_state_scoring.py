@@ -78,7 +78,7 @@ async def test_overconfident_wrong_scores_low(gm):
     await gm.submit_estimate("p1", mu=0.0, sigma=0.1)
     await advance_to(gm, GamePhase.REVEAL_ANSWER)
 
-    assert gm.state.participants["p1"].scores[0] == 0.0
+    assert gm.state.participants["p1"].scores[0] < 15
 
 
 @pytest.mark.anyio
