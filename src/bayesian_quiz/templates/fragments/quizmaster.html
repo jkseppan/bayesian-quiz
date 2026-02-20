@@ -17,17 +17,8 @@
 <!-- Current state info -->
 <div class="bg-slate-800 rounded-xl p-6 mb-8">
     {% if game.phase.value == "lobby" %}
-    <h2 class="text-lg font-semibold mb-4">Waiting for players</h2>
-    <div class="space-y-2">
-        {% for participant in game.participants.values() %}
-        <div class="flex items-center gap-2">
-            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
-            <span>{{ participant.nickname }}</span>
-        </div>
-        {% else %}
-        <p class="text-slate-400">No players yet</p>
-        {% endfor %}
-    </div>
+    <h2 class="text-lg font-semibold mb-2">Waiting for players</h2>
+    <p class="text-slate-300 font-mono text-2xl">{{ game.participants | length }} joined</p>
 
     {% elif game.phase.value == "question_active" %}
     <h2 class="text-lg font-semibold mb-2">Current Question</h2>
