@@ -13,12 +13,12 @@
         <p class="text-slate-400 text-lg">Quantify your uncertainty</p>
     </div>
 
-    <form action="/" method="get" class="space-y-4">
+    <form id="slug-form" class="space-y-4">
         <div>
             <label class="block text-sm font-medium text-slate-400 mb-2">Quiz slug</label>
             <input
+                id="slug-input"
                 type="text"
-                name="slug"
                 class="w-full px-4 py-3 rounded-xl border border-slate-600 bg-slate-800 text-white text-lg text-center font-mono"
                 placeholder="e.g. sample"
                 required
@@ -32,6 +32,13 @@
             Join Quiz
         </button>
     </form>
+    <script>
+    document.getElementById('slug-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var slug = document.getElementById('slug-input').value.trim();
+        if (slug) window.location.href = '/?' + encodeURIComponent(slug);
+    });
+    </script>
 
     {% if quizzes %}
     <div class="text-slate-500 text-sm pt-4">

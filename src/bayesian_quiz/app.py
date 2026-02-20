@@ -42,9 +42,7 @@ if MOCKUPS_DIR.exists():
 
 
 def _get_slug(request: Request) -> str | None:
-    """Extract slug from query string (first key without a value, or 'slug' param)."""
-    if "slug" in request.query_params:
-        return request.query_params["slug"]
+    """Extract slug from query string: the first key with an empty value (?sample)."""
     for key, value in request.query_params.items():
         if value == "":
             return key
