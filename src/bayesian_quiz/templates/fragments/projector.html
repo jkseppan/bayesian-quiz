@@ -94,16 +94,18 @@
 
 {% elif game.phase.value == "reveal_answer" %}
 <!-- Reveal correct answer -->
-<div class="flex-1 flex flex-col items-center justify-center p-8">
-    <h2 class="text-3xl font-semibold mb-8">{{ game.current_question.text }}</h2>
+<div class="flex-1 flex flex-col items-center justify-center p-6 max-h-screen overflow-hidden">
+    <h2 class="text-3xl font-semibold mb-4 shrink-0">{{ game.current_question.text }}</h2>
 
-    <div class="text-8xl font-mono font-bold text-emerald-600 mb-4">
-        {{ game.current_question.answer }} {{ game.current_question.unit }}
+    <div class="w-full max-w-5xl px-8 shrink-0 mb-4">
+        <div id="answer-text" class="font-mono font-bold text-emerald-600 whitespace-nowrap text-center" style="font-size: 96px">
+            {{ game.current_question.answer | fmt_number }} {{ game.current_question.unit }}
+        </div>
     </div>
 
     {% set estimates = game.get_current_estimates() %}
     {% if estimates %}
-    <svg id="reveal-chart" class="w-full max-w-4xl" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="reveal-chart" class="w-full max-w-4xl min-h-0 flex-1" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
     <script>
     (function() {
         var estimates = [{% for e in estimates %}{"mu":{{e.mu}},"sigma":{{e.sigma}}}{% if not loop.last %},{% endif %}{% endfor %}];
@@ -114,10 +116,20 @@
     </script>
     {% endif %}
 
-    <p class="text-xl text-slate-600 max-w-2xl text-center mt-4">
+    <p class="text-xl text-slate-600 max-w-2xl text-center mt-2 shrink-0">
         {{ game.current_question.fun_fact }}
     </p>
 </div>
+<script>
+requestAnimationFrame(function() {
+    var el = document.getElementById('answer-text');
+    if (!el) return;
+    var maxWidth = el.parentElement.clientWidth;
+    while (el.scrollWidth > maxWidth && parseFloat(el.style.fontSize) > 24) {
+        el.style.fontSize = (parseFloat(el.style.fontSize) - 4) + 'px';
+    }
+});
+</script>
 
 {% elif game.phase.value == "question_scores" %}
 <!-- Question scores: top 5 -->

@@ -35,6 +35,15 @@ async def _shutdown():
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
+
+def _fmt_number(value: float) -> str:
+    if value == int(value):
+        return f"{int(value):,}".replace(",", "\u202f")
+    return f"{value:,.2f}".replace(",", "\u202f")
+
+
+templates.env.filters["fmt_number"] = _fmt_number
+
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 

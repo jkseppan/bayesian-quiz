@@ -146,7 +146,7 @@
     <div class="card border rounded-2xl p-6 mb-4">
         <p class="text-sm text-slate-500 mb-2">Correct answer</p>
         <p class="text-4xl font-mono font-bold text-emerald-600">
-            {{ game.current_question.answer }} {{ game.current_question.unit }}
+            {{ game.current_question.answer | fmt_number }} {{ game.current_question.unit }}
         </p>
     </div>
 
