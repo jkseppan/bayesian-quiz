@@ -227,22 +227,32 @@
         <p class="text-4xl font-mono font-bold text-indigo-600">{{ "%.1f" | format(participant.total_score) }}</p>
 
         {% if ns.rank is not none %}
-            {% if ns.rank == 1 %}
-        <p class="text-5xl mt-3">&#127947;</p>
-            {% elif ns.rank == 2 %}
+        {% set show_rank = (total_players < 6 and ns.rank <= 3) or (total_players >= 6 and ns.rank <= total_players // 2) %}
+            {% if show_rank %}
+                {% if ns.rank == 1 %}
+        <p class="text-5xl mt-3">&#129351;</p>
+        <p class="text-lg font-semibold text-amber-500 mt-1">1st place</p>
+                {% elif ns.rank == 2 %}
         <p class="text-5xl mt-3">&#129352;</p>
-            {% elif ns.rank == 3 %}
+        <p class="text-lg font-semibold text-slate-400 mt-1">2nd place</p>
+                {% elif ns.rank == 3 %}
         <p class="text-5xl mt-3">&#129353;</p>
-            {% elif total_players >= 6 and ns.rank <= total_players // 2 %}
-        <p class="text-lg text-slate-500 mt-3">#{{ ns.rank }} of {{ total_players }}</p>
+        <p class="text-lg font-semibold text-amber-700 mt-1">3rd place</p>
+                {% else %}
+        <p class="text-lg text-slate-500 mt-3">{{ ns.rank }}th place of {{ total_players }}</p>
+                {% endif %}
             {% endif %}
         {% endif %}
     </div>
 </div>
 
-    <div class="mt-6 space-y-3 text-slate-500">
-        <p>Join <strong>#pydata-helsinki</strong> on <a href="https://helsinki-python.github.io/discord" class="text-indigo-500 underline">our Discord</a></p>
-        <p><a href="https://pydata-helsinki.github.io" class="text-indigo-500 underline">PyData Helsinki home page</a></p>
+    <div class="mt-8 flex flex-col items-center gap-3">
+        <a href="https://helsinki-python.github.io/discord" class="flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors">
+            <span>&#128172;</span> Join <strong>#pydata-helsinki</strong> on Discord
+        </a>
+        <a href="https://pydata-helsinki.github.io" class="flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+            <span>&#127968;</span> PyData Helsinki home page
+        </a>
     </div>
 </div>
 <script>if (window._quizSSE) { window._quizSSE.close(); window._quizSSE = null; }</script>
