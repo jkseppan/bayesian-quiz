@@ -176,11 +176,13 @@ requestAnimationFrame(function() {
 
     <div class="w-full max-w-2xl space-y-4">
         {% for participant in game.participants.values() | sort(attribute='total_score', reverse=True) %}
+        {% if loop.index <= 5 %}
         <div class="flex items-center gap-4 p-4 bg-slate-100 rounded-xl">
             <span class="text-2xl font-bold text-slate-400 w-12">{{ loop.index }}</span>
             <span class="flex-1 text-xl font-semibold">{{ participant.nickname }}</span>
             <span class="text-xl font-mono font-bold text-indigo-600">{{ "%.1f" | format(participant.total_score) }}</span>
         </div>
+        {% endif %}
         {% else %}
         <p class="text-slate-500 text-center">No players yet</p>
         {% endfor %}
