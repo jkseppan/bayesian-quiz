@@ -120,7 +120,6 @@ async def test_broadcast_isolated_between_games():
 
     await game_a.advance_phase()
 
-    assert not queue_b.empty() is False or queue_b.qsize() == 0
     assert queue_a.qsize() == 1
     assert queue_b.qsize() == 0
 
