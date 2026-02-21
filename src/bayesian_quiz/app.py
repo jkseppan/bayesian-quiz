@@ -7,9 +7,13 @@ from pathlib import Path
 from typing import Annotated
 from uuid import uuid4
 
+import os
+import secrets
+
 import qrcode
-from fastapi import FastAPI, Request, Form, Cookie
+from fastapi import Depends, FastAPI, HTTPException, Request, Form, Cookie, status
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, StreamingResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -24,6 +28,21 @@ from .state import (
 from .questions import list_quizzes
 
 app = FastAPI(title="Bayesian Quiz")
+
+_basic = HTTPBasic()
+QUIZMASTER_USER = os.environ.get("QUIZMASTER_USER", "quizmaster")
+QUIZMASTER_PASS = os.environ.get("QUIZMASTER_PASS", "trustno1")
+
+
+def _require_quizmaster(credentials: Annotated[HTTPBasicCredentials, Depends(_basic)]):
+    user_ok = secrets.compare_digest(credentials.username.encode(), QUIZMASTER_USER.encode())
+    pass_ok = secrets.compare_digest(credentials.password.encode(), QUIZMASTER_PASS.encode())
+    if not (user_ok and pass_ok):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Basic"},
+        )
 
 
 @app.on_event("shutdown")
@@ -176,7 +195,7 @@ async def participant(
     )
 
 
-@app.get("/control", response_class=HTMLResponse)
+@app.get("/control", response_class=HTMLResponse, dependencies=[Depends(_require_quizmaster)])
 async def quizmaster(request: Request):
     slug, game = _get_game(request)
     return templates.TemplateResponse(
@@ -215,7 +234,7 @@ async def fragment_participant(
     )
 
 
-@app.get("/fragments/quizmaster", response_class=HTMLResponse)
+@app.get("/fragments/quizmaster", response_class=HTMLResponse, dependencies=[Depends(_require_quizmaster)])
 async def fragment_quizmaster(request: Request):
     slug, game = _get_game(request)
     return templates.TemplateResponse(
@@ -295,7 +314,7 @@ def _schedule_auto_advance(game: GameManager) -> None:
     )
 
 
-@app.post("/api/advance")
+@app.post("/api/advance", dependencies=[Depends(_require_quizmaster)])
 async def advance(request: Request):
     slug, game = _get_game(request)
     await game.advance_phase()
@@ -304,7 +323,7 @@ async def advance(request: Request):
     return {"phase": game.state.phase.value}
 
 
-@app.post("/api/reset")
+@app.post("/api/reset", dependencies=[Depends(_require_quizmaster)])
 async def reset(request: Request):
     slug, game = _get_game(request)
     await game.reset()
