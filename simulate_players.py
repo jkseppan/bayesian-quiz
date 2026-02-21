@@ -62,7 +62,7 @@ NICKNAMES = [
     '<iframe src="https://evil.com">',
     '<a href="javascript:void(0)">click me</a>',
     "javascript:alert(document.cookie)",
-    '<div style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:red;z-index:9999">PWNED</div>',
+    '<div style="position:fixed;top:0;background:red">PWNED</div>',
     '<style>body{display:none}</style>',
     "\\u003cscript\\u003ealert(1)\\u003c/script\\u003e",
     # Long / weird
