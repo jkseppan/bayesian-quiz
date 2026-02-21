@@ -4,7 +4,7 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer) {
     if (!svg || estimates.length === 0) return;
 
     var W = 800, H = 320;
-    var pad = {top: 20, right: 40, bottom: 50, left: 40};
+    var pad = {top: 44, right: 40, bottom: 50, left: 40};
     var plotW = W - pad.left - pad.right;
     var plotH = H - pad.top - pad.bottom;
 
@@ -169,7 +169,7 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer) {
         ansLabel.setAttribute("y", pad.top - 6);
         ansLabel.setAttribute("text-anchor", "middle");
         ansLabel.setAttribute("fill", "#059669");
-        ansLabel.setAttribute("font-size", "14");
+        ansLabel.setAttribute("font-size", "32");
         ansLabel.setAttribute("font-weight", "600");
         ansLabel.setAttribute("font-family", "'JetBrains Mono', monospace");
         ansLabel.textContent = (answer % 1 === 0 ? answer.toLocaleString() : answer.toFixed(1)) + (unit ? " " + unit : "");
