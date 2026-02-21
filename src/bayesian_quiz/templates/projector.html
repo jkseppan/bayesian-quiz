@@ -30,14 +30,13 @@ html[data-anim-dir="back"]::view-transition-new(root)    { animation: 320ms ease
 {% endblock %}
 
 {% block body %}
-<div id="main-content" class="min-h-screen flex flex-col" hx-get="/fragments/projector?{{ slug }}" hx-trigger="phase_changed from:#sse, participant_joined from:#sse, estimate_submitted from:#sse" hx-swap="innerHTML transition:true">
+<div id="main-content" class="min-h-screen flex flex-col" hx-get="/fragments/projector?{{ slug }}" hx-trigger="phase_changed from:#sse" hx-swap="innerHTML transition:true">
     {% include "fragments/projector.html" %}
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-htmx.config.globalViewTransitions = true;
 (function() {
     document.body.addEventListener('htmx:beforeSwap', function(e) {
         if (!e.detail.target || e.detail.target.id !== 'main-content') return;

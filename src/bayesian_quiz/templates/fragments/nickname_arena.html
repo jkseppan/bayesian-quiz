@@ -1,0 +1,170 @@
+{% if game.participants %}
+<div id="nickname-arena" class="absolute inset-0 overflow-hidden">
+    {%- set colors = ["text-indigo-500", "text-purple-500", "text-cyan-600", "text-emerald-500", "text-amber-500", "text-rose-500", "text-violet-500", "text-teal-500"] -%}
+    {% for participant in game.participants.values() %}
+    {%- set hash = participant.nickname | length + loop.index0 * 7 -%}
+    <span class="nickname-bubble absolute font-bold opacity-80 {{ colors[hash % colors|length] }}"
+          data-nickname="{{ participant.nickname }}">{{ participant.nickname }}</span>
+    {% endfor %}
+</div>
+{% endif %}
+<script>
+(function() {
+    var arena = document.getElementById('nickname-arena');
+    if (!arena) return;
+    var els = arena.querySelectorAll('.nickname-bubble');
+    if (!els.length) return;
+
+    if (!window._np) window._np = {};
+    var S = window._np;
+    if (S.raf) cancelAnimationFrame(S.raf);
+
+    requestAnimationFrame(function init() {
+        var W = arena.offsetWidth, H = arena.offsetHeight;
+        if (!W || !H) { requestAnimationFrame(init); return; }
+
+        var hdr = document.getElementById('lobby-header');
+        var excl = null;
+        if (hdr && hdr.firstElementChild) {
+            var pr = hdr.firstElementChild.getBoundingClientRect();
+            var ar = arena.getBoundingClientRect();
+            excl = { l: pr.left - ar.left - 32, t: pr.top - ar.top - 32,
+                     r: pr.right - ar.left + 32, b: pr.bottom - ar.top + 32 };
+        }
+
+        var n = els.length;
+        var baseFontSize = Math.max(14, Math.round(36 - (n - 1) * 22 / 99));
+        var maxBW = 240;
+        els.forEach(function(el, i) {
+            var vary = 0.85 + ((el.dataset.nickname.length * 7 + i * 13) % 10) / 10 * 0.3;
+            el.style.fontSize = Math.round(baseFontSize * vary) + 'px';
+            var natW = el.offsetWidth;
+            if (natW > maxBW) {
+                var fs = parseFloat(el.style.fontSize);
+                var lines = Math.ceil(natW / maxBW);
+                if (lines > 2) el.style.fontSize = Math.max(12, fs * 2 / lines) + 'px';
+                el.style.maxWidth = maxBW + 'px';
+                el.style.overflowWrap = 'break-word';
+            }
+        });
+
+        var prev = S.bodies || {};
+        var bodies = [];
+
+        els.forEach(function(el) {
+            var nm = el.dataset.nickname;
+            var w = el.offsetWidth, h = el.offsetHeight;
+            var old = prev[nm], x, y, vx, vy;
+
+            if (old) {
+                x = Math.max(0, Math.min(old.x, W - w));
+                y = Math.max(0, Math.min(old.y, H - h));
+                vx = old.vx; vy = old.vy;
+            } else {
+                var ang = Math.random() * Math.PI * 2;
+                var spd = 10 + Math.random() * 10;
+                vx = Math.cos(ang) * spd; vy = Math.sin(ang) * spd;
+                for (var t = 0; t < 80; t++) {
+                    x = Math.random() * Math.max(1, W - w);
+                    y = Math.random() * Math.max(1, H - h);
+                    if (!excl || x + w < excl.l || x > excl.r || y + h < excl.t || y > excl.b) break;
+                }
+            }
+
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            bodies.push({ el: el, nm: nm, x: x, y: y, vx: vx, vy: vy,
+                          w: w, h: h, r: Math.max(w, h) * 0.5 });
+        });
+
+        var lastT = performance.now();
+
+        function step(now) {
+            if (!document.getElementById('nickname-arena')) { S.raf = null; return; }
+            var dt = Math.min((now - lastT) / 1000, 0.05);
+            lastT = now;
+
+            var i, j, a, b, decay = Math.pow(0.99, dt);
+            for (i = 0; i < bodies.length; i++) {
+                b = bodies[i];
+                b.x += b.vx * dt; b.y += b.vy * dt;
+                b.vx *= decay; b.vy *= decay;
+
+                var spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+                if (spd < 3) {
+                    b.vx += (Math.random() - 0.5) * 10 * dt;
+                    b.vy += (Math.random() - 0.5) * 10 * dt;
+                }
+
+                if (b.x < 0) { b.x = 0; b.vx = Math.abs(b.vx); }
+                if (b.y < 0) { b.y = 0; b.vy = Math.abs(b.vy); }
+                if (b.x + b.w > W) { b.x = W - b.w; b.vx = -Math.abs(b.vx); }
+                if (b.y + b.h > H) { b.y = H - b.h; b.vy = -Math.abs(b.vy); }
+
+                if (excl && b.x + b.w > excl.l && b.x < excl.r &&
+                    b.y + b.h > excl.t && b.y < excl.b) {
+                    var pL = b.x + b.w - excl.l, pR = excl.r - b.x;
+                    var pT = b.y + b.h - excl.t, pB = excl.b - b.y;
+                    var m = Math.min(pL, pR, pT, pB);
+                    if (m === pL) { b.x = excl.l - b.w; b.vx = -Math.abs(b.vx); }
+                    else if (m === pR) { b.x = excl.r; b.vx = Math.abs(b.vx); }
+                    else if (m === pT) { b.y = excl.t - b.h; b.vy = -Math.abs(b.vy); }
+                    else { b.y = excl.b; b.vy = Math.abs(b.vy); }
+                }
+            }
+
+            for (i = 0; i < bodies.length; i++) {
+                a = bodies[i];
+                for (j = i + 1; j < bodies.length; j++) {
+                    b = bodies[j];
+                    var dx = (a.x + a.w / 2) - (b.x + b.w / 2);
+                    var dy = (a.y + a.h / 2) - (b.y + b.h / 2);
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    var minD = (a.r + b.r) * 0.7;
+                    if (dist >= minD || dist === 0) continue;
+                    var nx = dx / dist, ny = dy / dist;
+                    var dvn = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
+                    if (dvn > 0) continue;
+                    var imp = -dvn;
+                    a.vx += imp * nx; a.vy += imp * ny;
+                    b.vx -= imp * nx; b.vy -= imp * ny;
+                    var sep = (minD - dist) / 2;
+                    a.x += nx * sep; a.y += ny * sep;
+                    b.x -= nx * sep; b.y -= ny * sep;
+                }
+            }
+
+            var totalKE = 0, MAX_SPD = 20, TARGET_AVG = 15;
+            for (i = 0; i < bodies.length; i++) {
+                b = bodies[i];
+                var spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+                if (spd > MAX_SPD) { b.vx *= MAX_SPD / spd; b.vy *= MAX_SPD / spd; }
+                totalKE += b.vx * b.vx + b.vy * b.vy;
+            }
+            var targetKE = bodies.length * TARGET_AVG * TARGET_AVG;
+            if (totalKE > targetKE) {
+                var scale = Math.sqrt(targetKE / totalKE);
+                for (i = 0; i < bodies.length; i++) {
+                    bodies[i].vx *= scale; bodies[i].vy *= scale;
+                }
+            }
+
+            for (i = 0; i < bodies.length; i++) {
+                b = bodies[i];
+                b.el.style.left = b.x + 'px';
+                b.el.style.top = b.y + 'px';
+            }
+
+            var sv = {};
+            for (i = 0; i < bodies.length; i++) {
+                b = bodies[i];
+                sv[b.nm] = { x: b.x, y: b.y, vx: b.vx, vy: b.vy };
+            }
+            S.bodies = sv;
+            S.raf = requestAnimationFrame(step);
+        }
+
+        S.raf = requestAnimationFrame(step);
+    });
+})();
+</script>

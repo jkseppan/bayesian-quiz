@@ -234,6 +234,38 @@ async def fragment_projector(request: Request):
     )
 
 
+@app.get("/fragments/estimate-count", response_class=HTMLResponse)
+async def fragment_estimate_count(request: Request):
+    _slug, game = _get_game(request)
+    s = game.state
+    n = len(s.get_current_estimates())
+    total = len(s.participants)
+    return HTMLResponse(
+        f'<span class="font-mono text-2xl font-bold text-emerald-600">{n}</span>'
+        f" / {total} answered"
+    )
+
+
+@app.get("/fragments/player-count", response_class=HTMLResponse)
+async def fragment_player_count(request: Request):
+    _slug, game = _get_game(request)
+    n = len(game.state.participants)
+    return HTMLResponse(
+        f'<span class="font-mono text-3xl font-bold text-indigo-600">{n}</span>'
+        f" players joined"
+    )
+
+
+@app.get("/fragments/nickname-arena", response_class=HTMLResponse)
+async def fragment_nickname_arena(request: Request):
+    slug, game = _get_game(request)
+    return templates.TemplateResponse(
+        request,
+        "fragments/nickname_arena.html",
+        {"game": game.state, "slug": slug},
+    )
+
+
 @app.get("/fragments/participant", response_class=HTMLResponse)
 async def fragment_participant(
     request: Request, participant_id: Annotated[str | None, Cookie()] = None
