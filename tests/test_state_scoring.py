@@ -1,6 +1,5 @@
 """Tests for scoring integration in GameManager."""
 
-import anyio
 import pytest
 
 from bayesian_quiz.state import (
