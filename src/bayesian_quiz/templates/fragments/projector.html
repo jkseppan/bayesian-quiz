@@ -451,34 +451,47 @@
 </script>
 
 {% elif game.phase.value == "show_distribution" %}
-<!-- Show aggregate distribution -->
-<div class="flex-1 flex flex-col items-center justify-center p-8">
-    <h2 class="text-3xl font-semibold mb-8">{{ game.current_question.text }}</h2>
+<!-- Layout matches reveal_answer exactly so the SVG doesn't jump on transition -->
+<div class="flex-1 flex flex-col items-center p-6 max-h-screen overflow-hidden">
+    <h2 class="text-3xl font-semibold mb-4 shrink-0">{{ game.current_question.text }}</h2>
+
+    <div class="w-full max-w-5xl px-8 shrink-0 mb-4 flex items-center justify-center overflow-hidden" style="height: 128px">
+        <div class="font-mono font-bold whitespace-nowrap text-center invisible" style="font-size: 96px" aria-hidden="true">
+            {{ game.current_question.answer | fmt_number }} {{ game.current_question.unit }}
+        </div>
+    </div>
 
     {% set estimates = game.get_current_estimates() %}
     {% if estimates %}
-    <svg id="dist-chart" style="view-transition-name: main-chart" class="w-full max-w-4xl" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
-    <p class="text-xl text-slate-500 mt-4">{{ estimates | length }} estimates received</p>
+    <div class="flex-1 w-full max-w-4xl relative min-h-0">
+        <svg id="dist-chart" style="view-transition-name: main-chart" class="absolute inset-0" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
     <script>
     (function() {
         var estimates = [{% for e in estimates %}{"mu":{{ e.mu | tojson }},"sigma":{{ e.sigma | tojson }}}{% if not loop.last %},{% endif %}{% endfor %}];
         var unit = {{ game.current_question.unit | tojson }};
-        renderDistChart("dist-chart", estimates, unit, null);
+        var answer = {{ game.current_question.answer | tojson }};
+        renderDistChart("dist-chart", estimates, unit, answer, false);
     })();
     </script>
     {% else %}
-    <div class="w-full max-w-4xl h-80 bg-slate-100 rounded-2xl flex items-center justify-center mb-8">
+    <div class="flex-1 w-full max-w-4xl flex items-center justify-center">
         <span class="text-slate-400">No estimates received</span>
     </div>
     {% endif %}
+
+    <div class="shrink-0 mt-2 text-center max-w-2xl relative">
+        <p class="text-xl invisible" aria-hidden="true">{{ game.current_question.fun_fact }}</p>
+        <p class="text-xl text-slate-500 absolute inset-x-0 top-0">{{ estimates | length }} estimates received</p>
+    </div>
 </div>
 
 {% elif game.phase.value == "reveal_answer" %}
 <!-- Reveal correct answer -->
-<div class="flex-1 flex flex-col items-center justify-center p-6 max-h-screen overflow-hidden">
+<div class="flex-1 flex flex-col items-center p-6 max-h-screen overflow-hidden">
     <h2 class="text-3xl font-semibold mb-4 shrink-0">{{ game.current_question.text }}</h2>
 
-    <div class="w-full max-w-5xl px-8 shrink-0 mb-4">
+    <div class="w-full max-w-5xl px-8 shrink-0 mb-4 flex items-center justify-center overflow-hidden" style="height: 128px">
         <div id="answer-text" class="font-mono font-bold text-emerald-600 whitespace-nowrap text-center" style="font-size: 96px">
             {{ game.current_question.answer | fmt_number }} {{ game.current_question.unit }}
         </div>
@@ -486,7 +499,9 @@
 
     {% set estimates = game.get_current_estimates() %}
     {% if estimates %}
-    <svg id="reveal-chart" style="view-transition-name: main-chart" class="w-full max-w-4xl min-h-0 flex-1" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="flex-1 w-full max-w-4xl relative min-h-0">
+        <svg id="reveal-chart" style="view-transition-name: main-chart" class="absolute inset-0" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
     <script>
     (function() {
         var estimates = [{% for e in estimates %}{"mu":{{ e.mu | tojson }},"sigma":{{ e.sigma | tojson }}}{% if not loop.last %},{% endif %}{% endfor %}];

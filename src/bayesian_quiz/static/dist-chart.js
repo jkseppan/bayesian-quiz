@@ -1,4 +1,5 @@
-function renderDistChart(svgId, estimates, unit, answer) {
+function renderDistChart(svgId, estimates, unit, answer, drawAnswer) {
+    if (drawAnswer === undefined) drawAnswer = true;
     var svg = document.getElementById(svgId);
     if (!svg || estimates.length === 0) return;
 
@@ -150,7 +151,7 @@ function renderDistChart(svgId, estimates, unit, answer) {
         svg.appendChild(unitLabel);
     }
 
-    if (answer !== null) {
+    if (answer !== null && drawAnswer) {
         var ax = sx(answer);
 
         var ansLine = document.createElementNS(ns, "line");
