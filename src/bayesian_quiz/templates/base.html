@@ -23,7 +23,7 @@
     <script>
     (function() {
         var sse = document.getElementById('sse');
-        var source = new EventSource('/events?{{ slug }}');
+        var source = new EventSource('/events?' + {{ slug | tojson }});
         ['phase_changed', 'participant_joined', 'estimate_submitted', 'connected'].forEach(function(evt) {
             source.addEventListener(evt, function() {
                 sse.dispatchEvent(new CustomEvent(evt, {bubbles: true}));
