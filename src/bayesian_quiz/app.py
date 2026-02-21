@@ -58,7 +58,7 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
 def _fmt_number(value: float) -> str:
-    if value == int(value):
+    if value.is_integer():
         return f"{int(value):,}".replace(",", "\u202f")
     return f"{value:,.2f}".replace(",", "\u202f")
 
