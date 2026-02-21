@@ -596,6 +596,6 @@ requestAnimationFrame(function() {
 
 {% if game.phase.value != "lobby" %}
 <div class="fixed top-4 right-4">
-    <img src="/api/qr?{{ slug }}" alt="QR code" style="image-rendering: pixelated" class="w-16 h-16 rounded shadow-md">
+    <img src="/api/qr?{{ slug }}" alt="QR code" style="image-rendering: pixelated; width: 16vmin; height: 16vmin" class="rounded shadow-md">
 </div>
 {% endif %}
