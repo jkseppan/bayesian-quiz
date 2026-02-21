@@ -80,7 +80,7 @@
     <p class="text-xl text-slate-500 mt-4">{{ estimates | length }} estimates received</p>
     <script>
     (function() {
-        var estimates = [{% for e in estimates %}{"mu":{{e.mu}},"sigma":{{e.sigma}}}{% if not loop.last %},{% endif %}{% endfor %}];
+        var estimates = [{% for e in estimates %}{"mu":{{ e.mu | tojson }},"sigma":{{ e.sigma | tojson }}}{% if not loop.last %},{% endif %}{% endfor %}];
         var unit = {{ game.current_question.unit | tojson }};
         renderDistChart("dist-chart", estimates, unit, null);
     })();
@@ -108,9 +108,9 @@
     <svg id="reveal-chart" class="w-full max-w-4xl min-h-0 flex-1" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
     <script>
     (function() {
-        var estimates = [{% for e in estimates %}{"mu":{{e.mu}},"sigma":{{e.sigma}}}{% if not loop.last %},{% endif %}{% endfor %}];
+        var estimates = [{% for e in estimates %}{"mu":{{ e.mu | tojson }},"sigma":{{ e.sigma | tojson }}}{% if not loop.last %},{% endif %}{% endfor %}];
         var unit = {{ game.current_question.unit | tojson }};
-        var answer = {{ game.current_question.answer }};
+        var answer = {{ game.current_question.answer | tojson }};
         renderDistChart("reveal-chart", estimates, unit, answer);
     })();
     </script>
