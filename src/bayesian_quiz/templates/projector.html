@@ -30,19 +30,18 @@ html[data-anim-dir="back"]::view-transition-new(root)    { animation: 320ms ease
 {% endblock %}
 
 {% block body %}
-<div id="main-content" class="min-h-screen flex flex-col" hx-get="/fragments/projector?{{ slug }}" hx-trigger="phase_changed from:#sse, participant_joined from:#sse, estimate_submitted from:#sse" hx-swap="innerHTML">
+<div id="main-content" class="min-h-screen flex flex-col" hx-get="/fragments/projector?{{ slug }}" hx-trigger="phase_changed from:#sse, participant_joined from:#sse, estimate_submitted from:#sse" hx-swap="innerHTML transition:true">
     {% include "fragments/projector.html" %}
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-htmx.config.useViewTransitionsIfAvailable = true;
+htmx.config.globalViewTransitions = true;
 (function() {
-    var mc = document.getElementById('main-content');
-    if (!mc) return;
-    mc.addEventListener('htmx:beforeSwap', function(e) {
-        var html = e.detail.xhr ? e.detail.xhr.responseText : '';
+    document.body.addEventListener('htmx:beforeSwap', function(e) {
+        if (!e.detail.target || e.detail.target.id !== 'main-content') return;
+        var html = e.detail.serverResponse || (e.detail.xhr ? e.detail.xhr.responseText : '');
         if (!html) return;
         var tmp = document.createElement('div');
         tmp.innerHTML = html;
@@ -56,6 +55,10 @@ htmx.config.useViewTransitionsIfAvailable = true;
         } else {
             delete document.documentElement.dataset.animDir;
         }
+    });
+    document.body.addEventListener('htmx:afterSettle', function(e) {
+        if (!e.detail.target || e.detail.target.id !== 'main-content') return;
+        delete document.documentElement.dataset.animDir;
     });
 })();
 </script>
