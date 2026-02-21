@@ -227,7 +227,7 @@ class GameManager:
             return
         qi = self.state.current_question_index
         for participant in self.state.participants.values():
-            if qi not in participant.estimates:
+            if qi not in participant.estimates or qi in participant.scores:
                 continue
             est = participant.estimates[qi]
             crps = crps_normal(est.mu, est.sigma, question.answer)

@@ -97,7 +97,6 @@ async def test_total_score_accumulates_across_questions(gm):
 
 @pytest.mark.anyio
 async def test_scores_not_overwritten_on_second_reveal(gm):
-    """Advancing to REVEAL twice for same question shouldn't re-score."""
     await gm.add_participant("p1", "Alice")
     await advance_to(gm, GamePhase.QUESTION_ACTIVE)
     await gm.submit_estimate("p1", mu=100.0, sigma=5.0)
@@ -109,4 +108,4 @@ async def test_scores_not_overwritten_on_second_reveal(gm):
     gm._score_current_question()
     score_second = gm.state.participants["p1"].scores[0]
 
-    assert score_second != score_first  # _score_current_question does overwrite (no guard)
+    assert score_second == score_first
