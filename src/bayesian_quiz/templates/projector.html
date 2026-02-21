@@ -6,10 +6,57 @@
 
 {% block head %}
 <script src="/static/dist-chart.js"></script>
+<style>
+@keyframes _vt-scale-out { to   { opacity: 0; transform: scale(1.03); } }
+@keyframes _vt-scale-in  { from { opacity: 0; transform: scale(0.97); } }
+@keyframes _vt-slide-out-left  { to   { opacity: 0; transform: translateX(-4%); } }
+@keyframes _vt-slide-in-right  { from { opacity: 0; transform: translateX(4%);  } }
+@keyframes _vt-slide-out-right { to   { opacity: 0; transform: translateX(4%);  } }
+@keyframes _vt-slide-in-left   { from { opacity: 0; transform: translateX(-4%); } }
+@keyframes _vt-fade-out { to   { opacity: 0; } }
+@keyframes _vt-fade-in  { from { opacity: 0; } }
+
+::view-transition-old(root) { animation: 280ms ease-out both _vt-scale-out; }
+::view-transition-new(root) { animation: 280ms ease-out both _vt-scale-in;  }
+
+html[data-anim-dir="forward"]::view-transition-old(root) { animation: 320ms ease-out both _vt-slide-out-left;  }
+html[data-anim-dir="forward"]::view-transition-new(root) { animation: 320ms ease-out both _vt-slide-in-right;  }
+html[data-anim-dir="back"]::view-transition-old(root)    { animation: 320ms ease-out both _vt-slide-out-right; }
+html[data-anim-dir="back"]::view-transition-new(root)    { animation: 320ms ease-out both _vt-slide-in-left;   }
+
+::view-transition-old(main-chart) { animation: 500ms ease-in-out both _vt-fade-out; }
+::view-transition-new(main-chart) { animation: 500ms ease-in-out both _vt-fade-in;  }
+</style>
 {% endblock %}
 
 {% block body %}
 <div id="main-content" class="min-h-screen flex flex-col" hx-get="/fragments/projector?{{ slug }}" hx-trigger="phase_changed from:#sse, participant_joined from:#sse, estimate_submitted from:#sse" hx-swap="innerHTML">
     {% include "fragments/projector.html" %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+htmx.config.useViewTransitionsIfAvailable = true;
+(function() {
+    var mc = document.getElementById('main-content');
+    if (!mc) return;
+    mc.addEventListener('htmx:beforeSwap', function(e) {
+        var html = e.detail.xhr ? e.detail.xhr.responseText : '';
+        if (!html) return;
+        var tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        var newMeta = tmp.querySelector('#phase-meta');
+        var oldMeta = document.querySelector('#phase-meta');
+        if (!newMeta || !oldMeta) { delete document.documentElement.dataset.animDir; return; }
+        var newPhase = newMeta.dataset.phase, oldPhase = oldMeta.dataset.phase;
+        var newSlide = +newMeta.dataset.introSlide, oldSlide = +oldMeta.dataset.introSlide;
+        if (newPhase === 'intro' && oldPhase === 'intro') {
+            document.documentElement.dataset.animDir = newSlide > oldSlide ? 'forward' : 'back';
+        } else {
+            delete document.documentElement.dataset.animDir;
+        }
+    });
+})();
+</script>
 {% endblock %}

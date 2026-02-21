@@ -1,3 +1,5 @@
+<div id="phase-meta" hidden data-phase="{{ game.phase.value }}" data-intro-slide="{{ game.intro_slide }}"></div>
+
 {% if game.phase.value == "lobby" %}
 <div class="flex-1 relative overflow-hidden">
     <div id="lobby-header" class="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
@@ -455,7 +457,7 @@
 
     {% set estimates = game.get_current_estimates() %}
     {% if estimates %}
-    <svg id="dist-chart" class="w-full max-w-4xl" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="dist-chart" style="view-transition-name: main-chart" class="w-full max-w-4xl" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
     <p class="text-xl text-slate-500 mt-4">{{ estimates | length }} estimates received</p>
     <script>
     (function() {
@@ -484,7 +486,7 @@
 
     {% set estimates = game.get_current_estimates() %}
     {% if estimates %}
-    <svg id="reveal-chart" class="w-full max-w-4xl min-h-0 flex-1" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="reveal-chart" style="view-transition-name: main-chart" class="w-full max-w-4xl min-h-0 flex-1" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
     <script>
     (function() {
         var estimates = [{% for e in estimates %}{"mu":{{ e.mu | tojson }},"sigma":{{ e.sigma | tojson }}}{% if not loop.last %},{% endif %}{% endfor %}];
