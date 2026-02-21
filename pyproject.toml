@@ -28,6 +28,3 @@ dev = [
     "pytest>=9.0.2",
     "pytest-playwright>=0.7.2",
 ]
-
-[tool.pytest.ini_options]
-anyio_backend = "asyncio"
