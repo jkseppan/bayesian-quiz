@@ -1,10 +1,13 @@
 """Quiz file parser — loads questions from RFC 822-like text files."""
 
+import re
 from pathlib import Path
 
 from bayesian_quiz.state import Question
 
 QUIZZES_DIR = Path(__file__).parent.parent.parent / "quizzes"
+
+_SAFE_SLUG = re.compile(r"^[a-z0-9_-]{1,64}$")
 
 
 def parse_quiz_file(text: str) -> list[Question]:
@@ -80,6 +83,8 @@ def _parse_block(block: str) -> dict[str, str]:
 
 
 def load_quiz(slug: str) -> list[Question]:
+    if not _SAFE_SLUG.match(slug):
+        raise FileNotFoundError(f"Quiz not found: {slug}")
     path = QUIZZES_DIR / f"{slug}.txt"
     if not path.is_file():
         raise FileNotFoundError(f"Quiz not found: {slug}")
