@@ -335,7 +335,7 @@ async def reset(request: Request):
     return {"status": "reset"}
 
 
-JOIN_DOMAIN = "pydata.win"
+JOIN_DOMAIN = os.environ.get("JOIN_DOMAIN", "pydata.win")
 
 
 @app.get("/api/qr")
