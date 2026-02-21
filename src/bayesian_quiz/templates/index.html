@@ -20,7 +20,7 @@
                 id="slug-input"
                 type="text"
                 class="w-full px-4 py-3 rounded-xl border border-slate-600 bg-slate-800 text-white text-lg text-center font-mono"
-                placeholder="e.g. sample"
+                placeholder="Quiz identifier"
                 required
                 autofocus
             >
@@ -39,11 +39,5 @@
         if (slug) window.location.href = '/?' + encodeURIComponent(slug);
     });
     </script>
-
-    {% if quizzes %}
-    <div class="text-slate-500 text-sm pt-4">
-        <p>Available quizzes: {{ quizzes | join(", ") }}</p>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}

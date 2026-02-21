@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Quizmaster — Choose Quiz{% endblock %}
+
+{% block body_class %}bg-slate-900 text-white min-h-screen flex items-center justify-center p-8{% endblock %}
+
+{% block body %}
+<div class="max-w-lg w-full space-y-8">
+    <div>
+        <h1 class="text-3xl font-bold text-white mb-1">Quizmaster Control</h1>
+        <p class="text-slate-400">Select a quiz to host</p>
+    </div>
+
+    {% if error %}
+    <div class="px-4 py-3 rounded-lg bg-red-900/50 border border-red-700 text-red-300 text-sm">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if quizzes %}
+    <ul class="space-y-3">
+        {% for quiz in quizzes %}
+        <li>
+            <a
+                href="/control?{{ quiz }}"
+                class="flex items-center justify-between w-full px-5 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-indigo-500 transition-colors group"
+            >
+                <span class="font-mono text-lg text-white">{{ quiz }}</span>
+                <svg class="w-5 h-5 text-slate-500 group-hover:text-indigo-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-slate-500">No quiz files found in the <code class="text-slate-400">quizzes/</code> directory.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -8,13 +8,22 @@
 <div class="max-w-4xl mx-auto p-6 h-full flex flex-col">
     <div class="flex items-center justify-between mb-4 shrink-0">
         <h1 class="text-2xl font-bold">Quizmaster Control</h1>
-        <button
-            hx-post="/api/reset?{{ slug }}"
-            hx-swap="none"
-            class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition-colors"
-        >
-            Reset Game
-        </button>
+        <div class="flex items-center gap-3">
+            <a
+                href="/projector?{{ slug }}"
+                target="_blank"
+                class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors"
+            >
+                Projector ↗
+            </a>
+            <button
+                hx-post="/api/reset?{{ slug }}"
+                hx-swap="none"
+                class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition-colors"
+            >
+                Reset Game
+            </button>
+        </div>
     </div>
 
     <div id="control-panel" class="flex flex-col min-h-0 flex-1" hx-get="/fragments/quizmaster?{{ slug }}" hx-trigger="phase_changed from:#sse, participant_joined from:#sse, estimate_submitted from:#sse" hx-swap="innerHTML">

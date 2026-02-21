@@ -172,10 +172,7 @@ async def index(request: Request):
     slug = _get_slug(request)
     if slug:
         return RedirectResponse(url=f"/play?{slug}", status_code=302)
-    available = list_quizzes()
-    return templates.TemplateResponse(
-        request, "index.html", {"quizzes": available}
-    )
+    return templates.TemplateResponse(request, "index.html", {})
 
 
 @app.get("/projector", response_class=HTMLResponse)
@@ -204,7 +201,19 @@ async def participant(
 
 @app.get("/control", response_class=HTMLResponse, dependencies=[Depends(_require_quizmaster)])
 async def quizmaster(request: Request):
-    slug, game = _get_game(request)
+    slug = _get_slug(request)
+    if not slug:
+        return templates.TemplateResponse(
+            request, "control_pick.html", {"quizzes": list_quizzes()}
+        )
+    try:
+        game = get_or_create_game(slug)
+    except FileNotFoundError:
+        return templates.TemplateResponse(
+            request,
+            "control_pick.html",
+            {"quizzes": list_quizzes(), "error": f"Quiz not found: {slug}"},
+        )
     return templates.TemplateResponse(
         request,
         "quizmaster.html",
