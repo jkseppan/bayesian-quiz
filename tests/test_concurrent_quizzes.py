@@ -1,9 +1,9 @@
 """Tests for concurrent quizzes running independently in different phases."""
 
 import pytest
+from conftest import advance_to
 
 from bayesian_quiz.state import GameManager, GamePhase, Question
-from conftest import advance_to
 
 
 def make_game() -> GameManager:

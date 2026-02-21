@@ -18,6 +18,8 @@ jobs:
 
       - run: uv sync --group dev
 
+      - run: uv run ruff check src/ tests/
+
       - run: uv run playwright install --with-deps chromium
 
       - run: uv run pytest tests/

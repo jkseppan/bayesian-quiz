@@ -3,29 +3,28 @@
 import asyncio
 import io
 import json
+import os
+import secrets
 from pathlib import Path
 from typing import Annotated
 from uuid import uuid4
 
-import os
-import secrets
-
 import qrcode
-from fastapi import Depends, FastAPI, HTTPException, Request, Form, Cookie, status
+from fastapi import Cookie, Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from .questions import list_quizzes
 from .state import (
-    get_or_create_game,
-    games,
+    GRACE_PERIOD_SECONDS,
+    QUESTION_DURATION_SECONDS,
     GameManager,
     GamePhase,
-    QUESTION_DURATION_SECONDS,
-    GRACE_PERIOD_SECONDS,
+    games,
+    get_or_create_game,
 )
-from .questions import list_quizzes
 
 app = FastAPI(title="Bayesian Quiz")
 
@@ -92,7 +91,7 @@ def _get_game(request: Request) -> tuple[str, GameManager]:
     try:
         return slug, get_or_create_game(slug)
     except FileNotFoundError:
-        raise _BadSlug(f"Quiz not found: {slug}")
+        raise _BadSlug(f"Quiz not found: {slug}") from None
 
 
 @app.exception_handler(_BadSlug)
@@ -129,11 +128,14 @@ def _serialize_state(game: GameManager) -> dict:
 
 @app.get("/events")
 async def events(request: Request):
-    slug, game = _get_game(request)
+    _slug, game = _get_game(request)
     try:
         queue = game.subscribe()
     except ConnectionError:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Too many active connections")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Too many active connections",
+        ) from None
 
     async def event_generator():
         try:
@@ -149,7 +151,7 @@ async def events(request: Request):
                     if event is None:
                         break
                     yield _sse_message(event, json.dumps(_serialize_state(game)))
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     yield ": keepalive\n\n"
 
         finally:
@@ -239,7 +241,11 @@ async def fragment_participant(
     )
 
 
-@app.get("/fragments/quizmaster", response_class=HTMLResponse, dependencies=[Depends(_require_quizmaster)])
+@app.get(
+    "/fragments/quizmaster",
+    response_class=HTMLResponse,
+    dependencies=[Depends(_require_quizmaster)],
+)
 async def fragment_quizmaster(request: Request):
     slug, game = _get_game(request)
     return templates.TemplateResponse(
@@ -321,7 +327,7 @@ def _schedule_auto_advance(game: GameManager) -> None:
 
 @app.post("/api/advance", dependencies=[Depends(_require_quizmaster)])
 async def advance(request: Request):
-    slug, game = _get_game(request)
+    _slug, game = _get_game(request)
     await game.advance_phase()
     if game.state.phase == GamePhase.QUESTION_ACTIVE:
         _schedule_auto_advance(game)
@@ -330,7 +336,7 @@ async def advance(request: Request):
 
 @app.post("/api/reset", dependencies=[Depends(_require_quizmaster)])
 async def reset(request: Request):
-    slug, game = _get_game(request)
+    _slug, game = _get_game(request)
     await game.reset()
     return {"status": "reset"}
 

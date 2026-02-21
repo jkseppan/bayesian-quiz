@@ -1,6 +1,5 @@
 """Integration tests: verify malicious nicknames render as plain text in the browser."""
 
-import asyncio
 import socket
 import threading
 
@@ -144,7 +143,6 @@ class TestXSSNicknames:
 
             scripts = page.locator("script").all()
             for s in scripts:
-                src = s.get_attribute("src") or ""
                 text = s.text_content()
                 assert "hacked" not in text, "Injected script found in DOM"
 

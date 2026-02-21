@@ -2,7 +2,7 @@
 
 import pytest
 
-from bayesian_quiz.state import get_or_create_game, games
+from bayesian_quiz.state import games, get_or_create_game
 
 
 @pytest.fixture(autouse=True)

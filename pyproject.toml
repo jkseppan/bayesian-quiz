@@ -27,4 +27,28 @@ dev = [
     "anyio[trio]>=4.12.0",
     "pytest>=9.0.2",
     "pytest-playwright>=0.7.2",
+    "ruff>=0.15.2",
 ]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes (unused imports, undefined names)
+    "I",     # isort
+    "B",     # flake8-bugbear (suspicious constructs, raise-without-cause)
+    "UP",    # pyupgrade (modern Python idioms)
+    "ASYNC", # flake8-async (async best practices)
+    "PT",    # flake8-pytest-style
+    "FAST",  # FastAPI-specific rules
+    "RUF",   # ruff-specific rules
+]
+ignore = [
+    "RUF002",  # Greek/math symbols in docstrings are intentional in this codebase
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_xss.py" = ["E501"]  # XSS payload strings cannot be shortened

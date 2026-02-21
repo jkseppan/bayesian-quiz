@@ -29,13 +29,13 @@ def parse_quiz_file(text: str) -> list[Question]:
         try:
             answer = float(fields["answer"])
         except ValueError:
-            raise ValueError(f"Bad number for Answer: {fields['answer']!r}")
+            raise ValueError(f"Bad number for Answer: {fields['answer']!r}") from None
         scale = 10.0
         if "scale" in fields:
             try:
                 scale = float(fields["scale"])
             except ValueError:
-                raise ValueError(f"Bad number for Scale: {fields['scale']!r}")
+                raise ValueError(f"Bad number for Scale: {fields['scale']!r}") from None
         questions.append(Question(
             text=fields["question"],
             answer=answer,

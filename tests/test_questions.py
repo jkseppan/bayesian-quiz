@@ -2,7 +2,7 @@
 
 import pytest
 
-from bayesian_quiz.questions import parse_quiz_file, load_quiz, list_quizzes
+from bayesian_quiz.questions import list_quizzes, load_quiz, parse_quiz_file
 
 
 class TestParseQuizFile:

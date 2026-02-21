@@ -1,11 +1,11 @@
 """Game state management for Bayesian Quiz."""
 
+import asyncio
 import re
 import time
 import unicodedata
-from enum import Enum
 from dataclasses import dataclass, field
-import asyncio
+from enum import StrEnum
 
 from bayesian_quiz.scoring import crps_normal, crps_to_points
 
@@ -26,7 +26,7 @@ def sanitize_nickname(raw: str) -> str:
     return _WHITESPACE_RUN.sub(" ", cleaned).strip()
 
 
-class GamePhase(str, Enum):
+class GamePhase(StrEnum):
     """The current phase of the quiz."""
 
     LOBBY = "lobby"

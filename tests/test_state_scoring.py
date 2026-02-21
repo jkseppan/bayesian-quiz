@@ -1,9 +1,9 @@
 """Tests for scoring integration in GameManager."""
 
 import pytest
+from conftest import advance_to
 
 from bayesian_quiz.state import Estimate, GameManager, GamePhase, Question
-from conftest import advance_to
 
 
 @pytest.fixture
