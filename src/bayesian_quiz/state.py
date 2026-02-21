@@ -10,6 +10,7 @@ import asyncio
 from bayesian_quiz.scoring import crps_normal, crps_to_points
 
 QUESTION_DURATION_SECONDS = 30
+GRACE_PERIOD_SECONDS = 1
 _WHITESPACE_RUN = re.compile(r"\s+")
 
 
@@ -23,7 +24,6 @@ def sanitize_nickname(raw: str) -> str:
     normalized = unicodedata.normalize("NFKC", raw)
     cleaned = "".join(ch for ch in normalized if unicodedata.category(ch) != "Cf")
     return _WHITESPACE_RUN.sub(" ", cleaned).strip()
-GRACE_PERIOD_SECONDS = 1
 
 
 class GamePhase(str, Enum):
