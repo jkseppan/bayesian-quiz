@@ -86,7 +86,7 @@
     {% if game.phase.value == "lobby" %}
         Show CRPS Intro
     {% elif game.phase.value == "intro" %}
-        {% if game.intro_slide < 2 %}Next Slide &rarr;{% else %}Start Quiz{% endif %}
+        {% if game.intro_slide < 3 %}Next Slide &rarr;{% else %}Start Quiz{% endif %}
     {% elif game.phase.value == "question_active" %}
         End Submissions
     {% elif game.phase.value == "show_distribution" %}
@@ -104,12 +104,23 @@
     {% endif %}
 </button>
 {% if game.phase.value in ("lobby", "intro") %}
-<button
-    hx-post="/api/start-quiz?{{ slug }}"
-    hx-swap="none"
-    class="w-full py-2 mt-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-slate-300 transition-colors shrink-0"
->
-    Skip intro &rarr; Start Quiz
-</button>
+<div class="flex gap-2 mt-2 shrink-0">
+    {% if game.phase.value == "intro" and game.intro_slide > 0 %}
+    <button
+        hx-post="/api/back?{{ slug }}"
+        hx-swap="none"
+        class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-slate-300 transition-colors"
+    >
+        &larr; Back
+    </button>
+    {% endif %}
+    <button
+        hx-post="/api/start-quiz?{{ slug }}"
+        hx-swap="none"
+        class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-slate-300 transition-colors"
+    >
+        Skip intro &rarr; Start Quiz
+    </button>
+</div>
 {% endif %}
 {% endif %}

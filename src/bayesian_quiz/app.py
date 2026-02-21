@@ -351,6 +351,13 @@ async def start_quiz(request: Request):
     return {"phase": game.state.phase.value}
 
 
+@app.post("/api/back", dependencies=[Depends(_require_quizmaster)])
+async def back(request: Request):
+    _slug, game = _get_game(request)
+    await game.back_slide()
+    return {"phase": game.state.phase.value, "intro_slide": game.state.intro_slide}
+
+
 @app.post("/api/reset", dependencies=[Depends(_require_quizmaster)])
 async def reset(request: Request):
     _slug, game = _get_game(request)

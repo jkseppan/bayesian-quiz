@@ -11,7 +11,7 @@ from bayesian_quiz.scoring import crps_normal, crps_to_points
 
 QUESTION_DURATION_SECONDS = 30
 GRACE_PERIOD_SECONDS = 1
-INTRO_SLIDE_COUNT = 3
+INTRO_SLIDE_COUNT = 4
 _WHITESPACE_RUN = re.compile(r"\s+")
 
 
@@ -237,6 +237,12 @@ class GameManager:
         """Skip intro and jump directly to the first question."""
         self.state.intro_slide = 0
         await self._enter_question_active()
+
+    async def back_slide(self) -> None:
+        """Go back one intro slide. No-op if not in INTRO or already at slide 0."""
+        if self.state.phase == GamePhase.INTRO and self.state.intro_slide > 0:
+            self.state.intro_slide -= 1
+            await self.broadcast("phase_changed")
 
     async def _enter_question_active(self) -> None:
         self.state.phase = GamePhase.QUESTION_ACTIVE

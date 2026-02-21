@@ -222,7 +222,7 @@
 <!-- Intro slide 1: CRPS score table -->
 <div class="flex-1 flex flex-col items-center justify-center p-12">
     <h2 class="text-4xl font-bold mb-2 text-center">Continuous Ranked Probability Score</h2>
-    <p class="text-slate-500 text-xl mb-10 text-center">Lower CRPS = better. We convert to points so higher = better.</p>
+    <p class="text-slate-500 text-xl mb-10 text-center">Lower CRPS = better prediction.</p>
 
     <div class="w-full max-w-3xl">
         <table class="w-full text-left border-collapse">
@@ -283,7 +283,37 @@
 </div>
 
 {% elif game.intro_slide == 2 %}
-<!-- Intro slide 2: visual comparison -->
+<!-- Intro slide 2: points formula -->
+<div class="flex-1 flex flex-col items-center justify-center p-12 text-center">
+    <p class="text-slate-500 text-lg mb-4 uppercase tracking-widest font-medium">From CRPS to points</p>
+    <h2 class="text-4xl font-bold mb-12">Points range from 0 to 100. Higher is better.</h2>
+
+    <div class="bg-slate-50 rounded-3xl px-16 py-10 mb-10">
+        <p class="font-mono text-slate-400 text-xl mb-4">points =</p>
+        <p class="font-mono font-bold text-6xl text-indigo-600 leading-none">
+            100 &middot; e<sup class="text-3xl">−CRPS / scale</sup>
+        </p>
+        <p class="text-slate-400 mt-4 text-lg">where <em>scale</em> is set per question</p>
+    </div>
+
+    <div class="grid grid-cols-3 gap-8 max-w-3xl w-full text-left">
+        <div class="bg-slate-50 rounded-2xl p-5">
+            <p class="font-mono text-2xl font-bold text-emerald-600 mb-1">100</p>
+            <p class="text-slate-500">Perfect prediction (CRPS → 0)</p>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-5">
+            <p class="font-mono text-2xl font-bold text-indigo-500 mb-1">37</p>
+            <p class="text-slate-500">Off by one scale unit</p>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-5">
+            <p class="font-mono text-2xl font-bold text-slate-400 mb-1">0</p>
+            <p class="text-slate-500">Wildly wrong (CRPS → ∞)</p>
+        </div>
+    </div>
+</div>
+
+{% elif game.intro_slide == 3 %}
+<!-- Intro slide 3: visual comparison -->
 <div class="flex-1 flex flex-col items-center justify-center p-8">
     <h2 class="text-4xl font-bold mb-8 text-center">What this looks like</h2>
     <div class="grid grid-cols-3 gap-6 w-full max-w-5xl">
