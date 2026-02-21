@@ -269,7 +269,7 @@ async def register(
         "fragments/participant.html",
         {"game": game.state, "participant": p, "slug": slug},
     )
-    response.set_cookie(key="participant_id", value=participant_id, httponly=True)
+    response.set_cookie(key="participant_id", value=participant_id, httponly=True, samesite="lax")
     return response
 
 
