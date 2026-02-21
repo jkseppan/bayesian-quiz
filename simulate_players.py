@@ -12,7 +12,7 @@ import random
 
 import httpx
 
-BASE_URL = "http://127.0.0.1:8000"
+DEFAULT_BASE_URL = "http://127.0.0.1:8000"
 
 NICKNAMES = [
     "σ Grindset",
@@ -157,10 +157,10 @@ def generate_estimate(answer: float) -> tuple[float, float]:
     return round(mu, 2), round(sigma, 2)
 
 
-async def run_player(player_index: int, slug: str, registered: asyncio.Event):
+async def run_player(player_index: int, slug: str, base_url: str, registered: asyncio.Event):
     nickname = generate_nickname(player_index)
 
-    async with httpx.AsyncClient(base_url=BASE_URL, timeout=None) as client:
+    async with httpx.AsyncClient(base_url=base_url, timeout=None) as client:
         resp = await client.post(f"/api/register?{slug}", data={"nickname": nickname})
         cookies = dict(resp.cookies)
         registered.set()
@@ -203,6 +203,8 @@ async def main():
                         help="Number of players (max 150)")
     parser.add_argument("-s", "--slug", default="sample",
                         help="Quiz slug (default: sample)")
+    parser.add_argument("-u", "--base-url", default=DEFAULT_BASE_URL,
+                        help=f"Base URL of the server (default: {DEFAULT_BASE_URL})")
     parser.add_argument("--stagger", type=float, default=0.05,
                         help="Seconds between player joins")
     args = parser.parse_args()
@@ -215,7 +217,7 @@ async def main():
     for i in range(num_players):
         ev = asyncio.Event()
         events.append(ev)
-        tasks.append(asyncio.create_task(run_player(i, args.slug, ev)))
+        tasks.append(asyncio.create_task(run_player(i, args.slug, args.base_url, ev)))
         await asyncio.sleep(args.stagger)
         await ev.wait()
         if (i + 1) % 10 == 0:
