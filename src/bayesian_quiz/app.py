@@ -130,9 +130,12 @@ def _serialize_state(game: GameManager) -> dict:
 @app.get("/events")
 async def events(request: Request):
     slug, game = _get_game(request)
+    try:
+        queue = game.subscribe()
+    except ConnectionError:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Too many active connections")
 
     async def event_generator():
-        queue = game.subscribe()
         try:
             yield "retry: 500\n"
             yield _sse_message("connected", json.dumps({"phase": game.state.phase.value}))

@@ -137,8 +137,12 @@ class GameManager:
         self._auto_advance_task: asyncio.Task | None = None
         self._shutting_down = False
 
+    _MAX_SUBSCRIBERS = 500
+
     def subscribe(self) -> asyncio.Queue[str]:
         """Subscribe to state updates. Returns a queue that receives update events."""
+        if len(self._subscribers) >= self._MAX_SUBSCRIBERS:
+            raise ConnectionError("Too many active SSE connections")
         queue: asyncio.Queue[str] = asyncio.Queue()
         self._subscribers.append(queue)
         return queue
