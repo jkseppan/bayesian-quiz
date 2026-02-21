@@ -343,6 +343,14 @@ async def advance(request: Request):
     return {"phase": game.state.phase.value}
 
 
+@app.post("/api/start-quiz", dependencies=[Depends(_require_quizmaster)])
+async def start_quiz(request: Request):
+    _slug, game = _get_game(request)
+    await game.start_quiz()
+    _schedule_auto_advance(game)
+    return {"phase": game.state.phase.value}
+
+
 @app.post("/api/reset", dependencies=[Depends(_require_quizmaster)])
 async def reset(request: Request):
     _slug, game = _get_game(request)

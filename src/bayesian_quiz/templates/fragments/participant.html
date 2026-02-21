@@ -29,7 +29,7 @@
     </form>
 </div>
 
-{% elif game.phase.value == "lobby" %}
+{% elif game.phase.value in ("lobby", "intro") %}
 <!-- Waiting in lobby -->
 <div class="text-center mt-16">
     <div class="text-6xl mb-4">&#128075;</div>

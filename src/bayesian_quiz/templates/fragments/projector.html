@@ -190,6 +190,129 @@
 })();
 </script>
 
+{% elif game.phase.value == "intro" %}
+
+{% if game.intro_slide == 0 %}
+<!-- Intro slide 0: concept -->
+<div class="flex-1 flex flex-col items-center justify-center p-12 text-center">
+    <p class="text-slate-500 text-lg mb-4 uppercase tracking-widest font-medium">How this quiz works</p>
+    <h2 class="text-6xl font-bold mb-10 bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent leading-tight">
+        Give your answer as a distribution
+    </h2>
+    <div class="grid grid-cols-3 gap-8 max-w-5xl w-full mt-4">
+        <div class="bg-slate-50 rounded-2xl p-6">
+            <div class="text-4xl mb-3">&#956;</div>
+            <p class="text-xl font-semibold mb-2">Mean</p>
+            <p class="text-slate-500">Your best estimate of the true value</p>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-6">
+            <div class="text-4xl mb-3">&#963;</div>
+            <p class="text-xl font-semibold mb-2">Std. Deviation</p>
+            <p class="text-slate-500">How confident you are — smaller σ means more confident</p>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-6">
+            <div class="text-4xl mb-3">&#127919;</div>
+            <p class="text-xl font-semibold mb-2">Calibration wins</p>
+            <p class="text-slate-500">Right <em>and</em> confident scores highest. Wrong <em>and</em> confident is penalised.</p>
+        </div>
+    </div>
+</div>
+
+{% elif game.intro_slide == 1 %}
+<!-- Intro slide 1: CRPS score table -->
+<div class="flex-1 flex flex-col items-center justify-center p-12">
+    <h2 class="text-4xl font-bold mb-2 text-center">Continuous Ranked Probability Score</h2>
+    <p class="text-slate-500 text-xl mb-10 text-center">Lower CRPS = better. We convert to points so higher = better.</p>
+
+    <div class="w-full max-w-3xl">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b-2 border-slate-200">
+                    <th class="py-4 pr-8 text-slate-500 font-medium text-lg">Answer = 42</th>
+                    <th class="py-4 px-6 text-center">
+                        <span class="text-indigo-600 font-bold text-xl">Confident</span>
+                        <span class="block font-mono text-slate-400 text-base font-normal">σ = 1</span>
+                    </th>
+                    <th class="py-4 px-6 text-center">
+                        <span class="text-purple-600 font-bold text-xl">Uncertain</span>
+                        <span class="block font-mono text-slate-400 text-base font-normal">σ = 20</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b border-slate-100">
+                    <td class="py-5 pr-8">
+                        <span class="font-semibold text-lg">Accurate</span>
+                        <span class="block font-mono text-slate-400">μ = 42</span>
+                    </td>
+                    <td class="py-5 px-6 text-center">
+                        <span class="font-mono text-2xl font-bold text-emerald-600">0.23</span>
+                    </td>
+                    <td class="py-5 px-6 text-center">
+                        <span class="font-mono text-2xl text-slate-500">4.67</span>
+                    </td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                    <td class="py-5 pr-8">
+                        <span class="font-semibold text-lg">Pretty good</span>
+                        <span class="block font-mono text-slate-400">μ = 40</span>
+                    </td>
+                    <td class="py-5 px-6 text-center">
+                        <span class="font-mono text-2xl text-slate-600">1.46</span>
+                    </td>
+                    <td class="py-5 px-6 text-center">
+                        <span class="font-mono text-2xl text-slate-500">4.75</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="py-5 pr-8">
+                        <span class="font-semibold text-lg">Inaccurate</span>
+                        <span class="block font-mono text-slate-400">μ = 30</span>
+                    </td>
+                    <td class="py-5 px-6 text-center">
+                        <span class="font-mono text-2xl font-bold text-red-500">11.44</span>
+                    </td>
+                    <td class="py-5 px-6 text-center">
+                        <span class="font-mono text-2xl text-slate-500">7.46</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="text-slate-400 text-base mt-6 text-center">Overconfidence when wrong is punished harder than honest uncertainty</p>
+    </div>
+</div>
+
+{% elif game.intro_slide == 2 %}
+<!-- Intro slide 2: visual comparison -->
+<div class="flex-1 flex flex-col items-center justify-center p-8">
+    <h2 class="text-4xl font-bold mb-8 text-center">What this looks like</h2>
+    <div class="grid grid-cols-3 gap-6 w-full max-w-5xl">
+        <div class="flex flex-col items-center">
+            <p class="text-lg font-semibold text-emerald-600 mb-1">Confident &amp; Correct</p>
+            <p class="font-mono text-slate-400 text-sm mb-3">μ=42, σ=1 &rarr; CRPS 0.23</p>
+            <svg id="intro-chart-a" class="w-full" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        <div class="flex flex-col items-center">
+            <p class="text-lg font-semibold text-amber-500 mb-1">Uncertain &amp; Correct</p>
+            <p class="font-mono text-slate-400 text-sm mb-3">μ=42, σ=20 &rarr; CRPS 4.67</p>
+            <svg id="intro-chart-b" class="w-full" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        <div class="flex flex-col items-center">
+            <p class="text-lg font-semibold text-red-500 mb-1">Confident &amp; Wrong</p>
+            <p class="font-mono text-slate-400 text-sm mb-3">μ=30, σ=1 &rarr; CRPS 11.44</p>
+            <svg id="intro-chart-c" class="w-full" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+    </div>
+</div>
+<script>
+(function() {
+    renderDistChart("intro-chart-a", [{mu: 42, sigma: 1}], "", 42);
+    renderDistChart("intro-chart-b", [{mu: 42, sigma: 20}], "", 42);
+    renderDistChart("intro-chart-c", [{mu: 30, sigma: 1}], "", 42);
+})();
+</script>
+{% endif %}
+
 {% elif game.phase.value == "question_active" %}
 <!-- Question: Show question with countdown -->
 <div class="flex-1 flex flex-col p-8">

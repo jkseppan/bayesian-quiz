@@ -19,6 +19,7 @@ def two_question_game() -> GameManager:
 async def advance_to(gm: GameManager, target: GamePhase) -> None:
     phase_order = [
         GamePhase.LOBBY,
+        GamePhase.INTRO,
         GamePhase.QUESTION_ACTIVE,
         GamePhase.SHOW_DISTRIBUTION,
         GamePhase.REVEAL_ANSWER,

@@ -11,6 +11,7 @@ from bayesian_quiz.scoring import crps_normal, crps_to_points
 
 QUESTION_DURATION_SECONDS = 30
 GRACE_PERIOD_SECONDS = 1
+INTRO_SLIDE_COUNT = 3
 _WHITESPACE_RUN = re.compile(r"\s+")
 
 
@@ -30,6 +31,7 @@ class GamePhase(StrEnum):
     """The current phase of the quiz."""
 
     LOBBY = "lobby"
+    INTRO = "intro"
     QUESTION_ACTIVE = "question_active"
     SHOW_DISTRIBUTION = "show_distribution"
     REVEAL_ANSWER = "reveal_answer"
@@ -76,6 +78,7 @@ class GameState:
     """The complete state of a quiz game."""
 
     phase: GamePhase = GamePhase.LOBBY
+    intro_slide: int = 0
     questions: list[Question] = field(default_factory=list)
     current_question_index: int = 0
     participants: dict[str, Participant] = field(default_factory=dict)
@@ -197,8 +200,17 @@ class GameManager:
 
     async def advance_phase(self) -> None:
         """Advance to the next phase in the quiz flow."""
+        if self.state.phase == GamePhase.INTRO:
+            if self.state.intro_slide < INTRO_SLIDE_COUNT - 1:
+                self.state.intro_slide += 1
+                await self.broadcast("phase_changed")
+                return
+            self.state.intro_slide = 0
+            await self._enter_question_active()
+            return
+
         transitions = {
-            GamePhase.LOBBY: GamePhase.QUESTION_ACTIVE,
+            GamePhase.LOBBY: GamePhase.INTRO,
             GamePhase.QUESTION_ACTIVE: GamePhase.SHOW_DISTRIBUTION,
             GamePhase.SHOW_DISTRIBUTION: GamePhase.REVEAL_ANSWER,
             GamePhase.REVEAL_ANSWER: GamePhase.QUESTION_SCORES,
@@ -220,6 +232,17 @@ class GameManager:
                 self.state.question_started_at = None
                 self.state.question_deadline = None
             await self.broadcast("phase_changed")
+
+    async def start_quiz(self) -> None:
+        """Skip intro and jump directly to the first question."""
+        self.state.intro_slide = 0
+        await self._enter_question_active()
+
+    async def _enter_question_active(self) -> None:
+        self.state.phase = GamePhase.QUESTION_ACTIVE
+        self.state.question_started_at = time.monotonic()
+        self.state.question_deadline = time.time() + QUESTION_DURATION_SECONDS
+        await self.broadcast("phase_changed")
 
     def _score_current_question(self) -> None:
         question = self.state.current_question

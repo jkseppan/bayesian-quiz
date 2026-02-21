@@ -20,6 +20,10 @@
     <h2 class="text-lg font-semibold mb-2">Waiting for players</h2>
     <p class="text-slate-300 font-mono text-2xl">{{ game.participants | length }} joined</p>
 
+    {% elif game.phase.value == "intro" %}
+    <h2 class="text-lg font-semibold mb-2">CRPS Intro — Slide {{ game.intro_slide + 1 }}/3</h2>
+    <p class="text-slate-400 text-sm">Players can still join. Projector shows the scoring explanation.</p>
+
     {% elif game.phase.value == "question_active" %}
     <h2 class="text-lg font-semibold mb-2">Current Question</h2>
     <p class="text-slate-300 mb-4">{{ game.current_question.text }}</p>
@@ -80,7 +84,9 @@
     class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-lg font-semibold transition-colors shrink-0"
 >
     {% if game.phase.value == "lobby" %}
-        Start Quiz
+        Show CRPS Intro
+    {% elif game.phase.value == "intro" %}
+        {% if game.intro_slide < 2 %}Next Slide &rarr;{% else %}Start Quiz{% endif %}
     {% elif game.phase.value == "question_active" %}
         End Submissions
     {% elif game.phase.value == "show_distribution" %}
@@ -96,5 +102,13 @@
             End Quiz
         {% endif %}
     {% endif %}
+</button>
+{% if game.phase.value in ("lobby", "intro") %}
+<button
+    hx-post="/api/start-quiz?{{ slug }}"
+    hx-swap="none"
+    class="w-full py-2 mt-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-slate-300 transition-colors shrink-0"
+>
+    Skip intro &rarr; Start Quiz
 </button>
 {% endif %}
