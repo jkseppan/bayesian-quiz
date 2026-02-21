@@ -336,9 +336,76 @@
 </div>
 <script>
 (function() {
-    renderDistChart("intro-chart-a", [{mu: 42, sigma: 1}], "", 42);
+    function renderSingleDist(svgId, mu, sigma, answer, xMin, xMax) {
+        var svg = document.getElementById(svgId);
+        if (!svg) return;
+        var W = 800, H = 320;
+        var pad = {top: 20, right: 40, bottom: 50, left: 40};
+        var plotW = W - pad.left - pad.right, plotH = H - pad.top - pad.bottom;
+        var N = 200, xs = [], ys = [];
+        for (var i = 0; i < N; i++) {
+            var x = xMin + (xMax - xMin) * i / (N - 1);
+            var z = (x - mu) / sigma;
+            xs.push(x); ys.push(Math.exp(-0.5 * z * z));
+        }
+        var yMax = 0;
+        for (var i = 0; i < N; i++) if (ys[i] > yMax) yMax = ys[i];
+        yMax *= 1.1;
+        function sx(x) { return pad.left + (x - xMin) / (xMax - xMin) * plotW; }
+        function sy(y) { return pad.top + plotH - (y / yMax) * plotH; }
+        var ns = "http://www.w3.org/2000/svg";
+        svg.innerHTML = "";
+        var d = "M" + sx(xs[0]) + "," + sy(ys[0]);
+        for (var i = 1; i < N; i++) d += "L" + sx(xs[i]) + "," + sy(ys[i]);
+        var fill = document.createElementNS(ns, "path");
+        fill.setAttribute("d", d + "L" + sx(xs[N-1]) + "," + sy(0) + "L" + sx(xs[0]) + "," + sy(0) + "Z");
+        fill.setAttribute("fill", "rgba(99,102,241,0.1)"); fill.setAttribute("stroke", "none");
+        svg.appendChild(fill);
+        var line = document.createElementNS(ns, "path");
+        line.setAttribute("d", d); line.setAttribute("fill", "none");
+        line.setAttribute("stroke", "#4f46e5"); line.setAttribute("stroke-width", "3");
+        svg.appendChild(line);
+        var axis = document.createElementNS(ns, "line");
+        axis.setAttribute("x1", pad.left); axis.setAttribute("y1", sy(0));
+        axis.setAttribute("x2", W - pad.right); axis.setAttribute("y2", sy(0));
+        axis.setAttribute("stroke", "#cbd5e1"); axis.setAttribute("stroke-width", "1");
+        svg.appendChild(axis);
+        var range = xMax - xMin, rawStep = range / 5;
+        var mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+        var step = mag;
+        for (var s of [1,2,2.5,5,10]) { if (s*mag >= rawStep) { step = s*mag; break; } }
+        for (var tv = Math.ceil(xMin/step)*step; tv <= xMax; tv += step) {
+            var tx = sx(tv);
+            var tick = document.createElementNS(ns, "line");
+            tick.setAttribute("x1", tx); tick.setAttribute("y1", sy(0));
+            tick.setAttribute("x2", tx); tick.setAttribute("y2", sy(0)+6);
+            tick.setAttribute("stroke", "#94a3b8"); tick.setAttribute("stroke-width", "1");
+            svg.appendChild(tick);
+            var lbl = document.createElementNS(ns, "text");
+            lbl.setAttribute("x", tx); lbl.setAttribute("y", sy(0)+24);
+            lbl.setAttribute("text-anchor", "middle"); lbl.setAttribute("fill", "#64748b");
+            lbl.setAttribute("font-size", "13"); lbl.setAttribute("font-family", "'JetBrains Mono',monospace");
+            lbl.textContent = tv % 1 === 0 ? tv : tv.toFixed(1);
+            svg.appendChild(lbl);
+        }
+        var ax = sx(answer);
+        var ansLine = document.createElementNS(ns, "line");
+        ansLine.setAttribute("x1", ax); ansLine.setAttribute("y1", pad.top);
+        ansLine.setAttribute("x2", ax); ansLine.setAttribute("y2", sy(0));
+        ansLine.setAttribute("stroke", "#059669"); ansLine.setAttribute("stroke-width", "2.5");
+        ansLine.setAttribute("stroke-dasharray", "8,4");
+        svg.appendChild(ansLine);
+        var ansLbl = document.createElementNS(ns, "text");
+        ansLbl.setAttribute("x", ax); ansLbl.setAttribute("y", pad.top - 6);
+        ansLbl.setAttribute("text-anchor", "middle"); ansLbl.setAttribute("fill", "#059669");
+        ansLbl.setAttribute("font-size", "14"); ansLbl.setAttribute("font-weight", "600");
+        ansLbl.setAttribute("font-family", "'JetBrains Mono',monospace");
+        ansLbl.textContent = answer;
+        svg.appendChild(ansLbl);
+    }
+    renderSingleDist("intro-chart-a", 42, 1, 42, 22, 62);
     renderDistChart("intro-chart-b", [{mu: 42, sigma: 20}], "", 42);
-    renderDistChart("intro-chart-c", [{mu: 30, sigma: 1}], "", 42);
+    renderSingleDist("intro-chart-c", 30, 1, 42, 22, 62);
 })();
 </script>
 {% endif %}
