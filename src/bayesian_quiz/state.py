@@ -161,7 +161,7 @@ class GameManager:
 
     async def add_participant(self, participant_id: str, nickname: str) -> Participant:
         """Add a new participant to the game."""
-        nickname = sanitize_nickname(nickname)
+        nickname = sanitize_nickname(nickname)[:64]
         if not nickname:
             raise ValueError("Nickname cannot be empty")
         existing = {p.nickname.casefold() for p in self.state.participants.values()}
