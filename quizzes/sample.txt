@@ -3,6 +3,8 @@ Answer: 34.0
 Unit: years
 Scale: 10.0
 Factoid: Python was conceived in the late 1980s by Guido van Rossum at CWI in the Netherlands.
+  It was named after Monty Python, not the snake.
+  The first public release was Python 0.9.0 in February 1991.
 
 Question: How many contributors does scikit-learn have on GitHub?
 Answer: 3100.0
