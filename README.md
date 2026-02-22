@@ -72,6 +72,7 @@ The quizmaster interface is protected by HTTP basic auth (`QUIZMASTER_USER` / `Q
 |---------------------|---------|-------------|
 | `QUIZMASTER_PASS` | *(required)* | HTTP basic auth password for `/control` |
 | `QUIZMASTER_USER` | `quizmaster` | HTTP basic auth username |
+| `QUIZ_*` | | The app reads quizzes from environment variables in addition to files |
 | `JOIN_DOMAIN` | `pydata.win` | Domain used to build the QR code URL on the projector |
 
 Set `JOIN_DOMAIN` to your server's public hostname so the QR code links to the right place.
@@ -85,6 +86,10 @@ just simulate 20  # simulate 20 players against local server
 ```
 
 ## Deploying to Railway
+
+Note that you can only have one replica!
+For more replicas, add a Redis or something
+to coordinate answers.
 
 ### First deploy
 
@@ -110,7 +115,7 @@ railway variables set QUIZMASTER_USER=<your-username>
 
 ### Uploading quiz files
 
-Quiz files are not in git. Upload each one with:
+Quiz files are not in git. If running on Railway, upload each one with:
 
 ```bash
 just upload-quiz <slug>
@@ -122,6 +127,7 @@ For example:
 just upload-quiz python2025
 ```
 
+This creates an environment variable `QUIZ_python2025` with the file contents.
 The app reads `QUIZ_<slug>` env vars in addition to local files, so quizzes uploaded
 this way appear alongside any files present in the deployment.
 
