@@ -87,8 +87,12 @@ def load_quiz(slug: str) -> list[Question]:
     slug = slug.lower()
     if not _SAFE_SLUG.match(slug):
         raise FileNotFoundError(f"Quiz not found: {slug}")
-    env_key = f"QUIZ_{slug.upper()}"
-    if env_text := os.environ.get(env_key):
+    target_key = f"QUIZ_{slug}".upper()
+    env_text = next(
+        (val for key, val in os.environ.items() if key.upper() == target_key),
+        None,
+    )
+    if env_text:
         return parse_quiz_file(env_text)
     path = QUIZZES_DIR / f"{slug}.txt"
     if not path.is_file():

@@ -108,6 +108,10 @@ class TestLoadQuiz:
         assert load_quiz("ENVTEST")[0].answer == 34.0
         assert load_quiz("EnvTest")[0].answer == 34.0
 
+    def test_env_var_name_lowercase_suffix(self, monkeypatch):
+        monkeypatch.setenv("QUIZ_tmp", SAMPLE_QUIZ_TEXT)
+        assert load_quiz("tmp")[0].answer == 34.0
+
     def test_env_var_takes_precedence_over_file(self, monkeypatch, tmp_path):
         override = "Question: Override\nAnswer: 99.0\n"
         monkeypatch.setenv("QUIZ_SAMPLE", override)
