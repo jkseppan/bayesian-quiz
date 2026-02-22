@@ -113,13 +113,13 @@ railway variables set QUIZMASTER_USER=<your-username>
 Quiz files are not in git. Upload each one with:
 
 ```bash
-railway variables set QUIZ_<slug>="$(cat quizzes/<slug>.txt)"
+just upload-quiz <slug>
 ```
 
 For example:
 
 ```bash
-railway variables set QUIZ_python2025="$(cat quizzes/python2025.txt)"
+just upload-quiz python2025
 ```
 
 The app reads `QUIZ_<slug>` env vars in addition to local files, so quizzes uploaded
