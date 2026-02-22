@@ -1,5 +1,6 @@
 """Quiz file parser — loads questions from RFC 822-like text files."""
 
+import os
 import re
 from pathlib import Path
 
@@ -83,8 +84,12 @@ def _parse_block(block: str) -> dict[str, str]:
 
 
 def load_quiz(slug: str) -> list[Question]:
+    slug = slug.lower()
     if not _SAFE_SLUG.match(slug):
         raise FileNotFoundError(f"Quiz not found: {slug}")
+    env_key = f"QUIZ_{slug.upper()}"
+    if env_text := os.environ.get(env_key):
+        return parse_quiz_file(env_text)
     path = QUIZZES_DIR / f"{slug}.txt"
     if not path.is_file():
         raise FileNotFoundError(f"Quiz not found: {slug}")
@@ -92,6 +97,12 @@ def load_quiz(slug: str) -> list[Question]:
 
 
 def list_quizzes() -> list[str]:
-    if not QUIZZES_DIR.is_dir():
-        return []
-    return sorted(p.stem for p in QUIZZES_DIR.glob("*.txt"))
+    from_env = {
+        key[5:].lower()
+        for key in os.environ
+        if key.startswith("QUIZ_") and _SAFE_SLUG.match(key[5:].lower())
+    }
+    from_files = set()
+    if QUIZZES_DIR.is_dir():
+        from_files = {p.stem for p in QUIZZES_DIR.glob("*.txt")}
+    return sorted(from_env | from_files)

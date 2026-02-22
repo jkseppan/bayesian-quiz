@@ -76,16 +76,6 @@ The quizmaster interface is protected by HTTP basic auth (`QUIZMASTER_USER` / `Q
 
 Set `JOIN_DOMAIN` to your server's public hostname so the QR code links to the right place.
 
-## Deploying to Heroku
-
-```sh
-heroku create
-heroku config:set QUIZMASTER_PASS=yourpassword JOIN_DOMAIN=yourapp.herokuapp.com
-git push heroku main
-```
-
-The `Procfile` is already configured.
-
 ## Development
 
 ```sh
@@ -93,3 +83,47 @@ just dev          # run dev server
 just test         # run test suite
 just simulate 20  # simulate 20 players against local server
 ```
+
+## Deploying to Railway
+
+### First deploy
+
+```bash
+railway login
+railway init
+railway up
+```
+
+### Required environment variables
+
+Set these in the Railway dashboard or via the CLI:
+
+```bash
+railway variables set QUIZMASTER_PASS=<your-password>
+```
+
+Optionally override the quizmaster username (default: `quizmaster`):
+
+```bash
+railway variables set QUIZMASTER_USER=<your-username>
+```
+
+### Uploading quiz files
+
+Quiz files are not in git. Upload each one with:
+
+```bash
+railway variables set QUIZ_<slug>="$(cat quizzes/<slug>.txt)"
+```
+
+For example:
+
+```bash
+railway variables set QUIZ_python2025="$(cat quizzes/python2025.txt)"
+```
+
+The app reads `QUIZ_<slug>` env vars in addition to local files, so quizzes uploaded
+this way appear alongside any files present in the deployment.
+
+> **Note**: `<slug>` must be lowercase letters, digits, underscores, or hyphens
+> (1–64 characters).
