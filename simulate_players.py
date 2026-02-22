@@ -157,33 +157,45 @@ def generate_estimate(answer: float) -> tuple[float, float]:
     return round(mu, 2), round(sigma, 2)
 
 
+async def _request_with_retry(client, method, url, label, **kwargs):
+    for attempt in range(5):
+        try:
+            resp = await getattr(client, method)(url, **kwargs)
+            return resp
+        except Exception as e:
+            wait = 1 * 2**attempt + random.random()
+            print(f"{label}{method.upper()} {url} failed ({e}), retry in {wait:.1f}s")
+            await asyncio.sleep(wait)
+    print(f"{label}{method.upper()} {url} failed after 5 retries")
+    return None
+
+
 async def run_player(player_index: int, slug: str, base_url: str, registered: asyncio.Event):
     nickname = generate_nickname(player_index)
     label = f"[Player {player_index}] "
 
-    try:
-        async with httpx.AsyncClient(base_url=base_url, timeout=30) as client:
-            resp = await client.post(f"/api/register?{slug}", data={"nickname": nickname})
-            if resp.status_code != 200:
-                print(f"{label}Registration failed: HTTP {resp.status_code}")
-                registered.set()
-                return
-            if "participant_id" not in resp.cookies:
-                print(f"{label}Registration rejected (no cookie): {nickname!r}")
-                registered.set()
-                return
-            cookies = dict(resp.cookies)
+    async with httpx.AsyncClient(base_url=base_url, timeout=30) as client:
+        resp = await _request_with_retry(
+            client, "post", f"/api/register?{slug}", label, data={"nickname": nickname},
+        )
+        if not resp or resp.status_code != 200:
+            print(f"{label}Registration failed: {nickname!r}")
             registered.set()
+            return
+        if "participant_id" not in resp.cookies:
+            print(f"{label}Registration rejected (no cookie): {nickname!r}")
+            registered.set()
+            return
+        cookies = dict(resp.cookies)
+        registered.set()
 
-            submitted_for_question = -1
+        submitted_for_question = -1
 
-            async with client.stream("GET", f"/events?{slug}", cookies=cookies) as stream:
-                buffer = ""
-                async for chunk in stream.aiter_text():
-                    buffer += chunk
-                    while "\n\n" in buffer:
-                        message, buffer = buffer.split("\n\n", 1)
-                        for line in message.strip().split("\n"):
+        while True:
+            try:
+                async with client.stream("GET", f"/events?{slug}", cookies=cookies) as stream:
+                    async for chunk in stream.aiter_text():
+                        for line in chunk.strip().split("\n"):
                             if not line.startswith("data:"):
                                 continue
                             try:
@@ -199,17 +211,20 @@ async def run_player(player_index: int, slug: str, base_url: str, registered: as
                                 answer_hint = KNOWN_ANSWERS.get(question_text, 50.0)
                                 mu, sigma = generate_estimate(answer_hint)
                                 await asyncio.sleep(random.uniform(0.5, 5.0))
-                                est_resp = await client.post(
-                                    f"/api/estimate?{slug}",
+                                est_resp = await _request_with_retry(
+                                    client, "post", f"/api/estimate?{slug}", label,
                                     data={"mu": str(mu), "sigma": str(sigma)},
                                     cookies=cookies,
                                 )
-                                if est_resp.status_code != 200:
-                                    print(f"{label}Estimate failed: HTTP {est_resp.status_code}")
+                                if est_resp and est_resp.status_code != 200:
+                                    print(f"{label}Estimate rejected: HTTP {est_resp.status_code}")
                                 submitted_for_question = qi
-    except Exception as e:
-        print(f"{label}Error: {e}")
-        registered.set()
+            except asyncio.CancelledError:
+                return
+            except Exception as e:
+                wait = 1 + random.random() * 2
+                print(f"{label}SSE disconnected ({e}), reconnecting in {wait:.1f}s")
+                await asyncio.sleep(wait)
 
 
 async def main():
