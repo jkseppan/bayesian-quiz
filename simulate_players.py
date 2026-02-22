@@ -159,42 +159,57 @@ def generate_estimate(answer: float) -> tuple[float, float]:
 
 async def run_player(player_index: int, slug: str, base_url: str, registered: asyncio.Event):
     nickname = generate_nickname(player_index)
+    label = f"[Player {player_index}] "
 
-    async with httpx.AsyncClient(base_url=base_url, timeout=None) as client:
-        resp = await client.post(f"/api/register?{slug}", data={"nickname": nickname})
-        cookies = dict(resp.cookies)
+    try:
+        async with httpx.AsyncClient(base_url=base_url, timeout=30) as client:
+            resp = await client.post(f"/api/register?{slug}", data={"nickname": nickname})
+            if resp.status_code != 200:
+                print(f"{label}Registration failed: HTTP {resp.status_code}")
+                registered.set()
+                return
+            if "participant_id" not in resp.cookies:
+                print(f"{label}Registration rejected (no cookie): {nickname!r}")
+                registered.set()
+                return
+            cookies = dict(resp.cookies)
+            registered.set()
+
+            submitted_for_question = -1
+
+            async with client.stream("GET", f"/events?{slug}", cookies=cookies) as stream:
+                buffer = ""
+                async for chunk in stream.aiter_text():
+                    buffer += chunk
+                    while "\n\n" in buffer:
+                        message, buffer = buffer.split("\n\n", 1)
+                        for line in message.strip().split("\n"):
+                            if not line.startswith("data:"):
+                                continue
+                            try:
+                                data = json.loads(line[5:].strip())
+                            except json.JSONDecodeError:
+                                continue
+
+                            phase = data.get("phase")
+                            qi = data.get("current_question_index", -1)
+                            question_text = (data.get("question") or {}).get("text", "")
+
+                            if phase == "question_active" and qi != submitted_for_question:
+                                answer_hint = KNOWN_ANSWERS.get(question_text, 50.0)
+                                mu, sigma = generate_estimate(answer_hint)
+                                await asyncio.sleep(random.uniform(0.5, 5.0))
+                                est_resp = await client.post(
+                                    f"/api/estimate?{slug}",
+                                    data={"mu": str(mu), "sigma": str(sigma)},
+                                    cookies=cookies,
+                                )
+                                if est_resp.status_code != 200:
+                                    print(f"{label}Estimate failed: HTTP {est_resp.status_code}")
+                                submitted_for_question = qi
+    except Exception as e:
+        print(f"{label}Error: {e}")
         registered.set()
-
-        submitted_for_question = -1
-
-        async with client.stream("GET", f"/events?{slug}", cookies=cookies) as stream:
-            buffer = ""
-            async for chunk in stream.aiter_text():
-                buffer += chunk
-                while "\n\n" in buffer:
-                    message, buffer = buffer.split("\n\n", 1)
-                    for line in message.strip().split("\n"):
-                        if not line.startswith("data:"):
-                            continue
-                        try:
-                            data = json.loads(line[5:].strip())
-                        except json.JSONDecodeError:
-                            continue
-
-                        phase = data.get("phase")
-                        qi = data.get("current_question_index", -1)
-                        question_text = (data.get("question") or {}).get("text", "")
-
-                        if phase == "question_active" and qi != submitted_for_question:
-                            answer_hint = KNOWN_ANSWERS.get(question_text, 50.0)
-                            mu, sigma = generate_estimate(answer_hint)
-                            await asyncio.sleep(random.uniform(0.5, 5.0))
-                            await client.post(
-                                f"/api/estimate?{slug}",
-                                data={"mu": str(mu), "sigma": str(sigma)},
-                                cookies=cookies,
-                            )
-                            submitted_for_question = qi
 
 
 async def main():
