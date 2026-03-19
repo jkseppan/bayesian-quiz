@@ -31,143 +31,58 @@
 
 {% if game.intro_slide == 0 %}
 <!-- Intro slide 0: concept -->
-<div class="flex-1 flex flex-col items-center justify-center p-12 text-center">
-    <p class="text-slate-500 text-lg mb-4 uppercase tracking-widest font-medium">How this quiz works</p>
+<div class="flex-1 flex flex-col items-center justify-center p-12 text-center bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900">
+    <p class="text-indigo-600 text-lg mb-4 uppercase tracking-widest font-medium">How this quiz works</p>
     <h2 class="text-6xl font-bold mb-10 bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent leading-tight">
         Give your answer as a distribution
     </h2>
     <div class="grid grid-cols-3 gap-8 max-w-5xl w-full mt-4">
-        <div class="bg-slate-50 rounded-2xl p-6">
-            <div class="text-4xl mb-3">&#956;</div>
+        <div class="bg-white rounded-2xl p-8 shadow-md border border-indigo-100">
+            <div class="text-5xl mb-3 text-indigo-600">&#956;</div>
             <p class="text-xl font-semibold mb-2">Mean</p>
-            <p class="text-slate-500">Your best estimate of the true value</p>
+            <p class="text-slate-600">Your best estimate of the true value</p>
         </div>
-        <div class="bg-slate-50 rounded-2xl p-6">
-            <div class="text-4xl mb-3">&#963;</div>
+        <div class="bg-white rounded-2xl p-8 shadow-md border border-purple-100">
+            <div class="text-5xl mb-3 text-purple-600">&#963;</div>
             <p class="text-xl font-semibold mb-2">Std. Deviation</p>
-            <p class="text-slate-500">How confident you are — smaller σ means more confident</p>
+            <p class="text-slate-600">How confident you are — smaller σ means more confident</p>
         </div>
-        <div class="bg-slate-50 rounded-2xl p-6">
-            <div class="text-4xl mb-3">&#127919;</div>
+        <div class="bg-white rounded-2xl p-8 shadow-md border border-cyan-100">
+            <div class="text-5xl mb-3 text-cyan-600">&#127919;</div>
             <p class="text-xl font-semibold mb-2">Calibration wins</p>
-            <p class="text-slate-500">Right <em>and</em> confident scores highest. Wrong <em>and</em> confident is penalised.</p>
+            <p class="text-slate-600">Right <em>and</em> confident scores highest. Wrong <em>and</em> confident is penalised.</p>
         </div>
     </div>
 </div>
 
 {% elif game.intro_slide == 1 %}
-<!-- Intro slide 1: CRPS score table -->
-<div class="flex-1 flex flex-col items-center justify-center p-12">
-    <h2 class="text-4xl font-bold mb-2 text-center">Continuous Ranked Probability Score</h2>
-    <p class="text-slate-500 text-xl mb-10 text-center">Lower CRPS = better prediction.</p>
-
-    <div class="w-full max-w-3xl">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="border-b-2 border-slate-200">
-                    <th class="py-4 pr-8 text-slate-500 font-medium text-lg">Answer = 42</th>
-                    <th class="py-4 px-6 text-center">
-                        <span class="text-indigo-600 font-bold text-xl">Confident</span>
-                        <span class="block font-mono text-slate-400 text-base font-normal">σ = 1</span>
-                    </th>
-                    <th class="py-4 px-6 text-center">
-                        <span class="text-purple-600 font-bold text-xl">Uncertain</span>
-                        <span class="block font-mono text-slate-400 text-base font-normal">σ = 20</span>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="border-b border-slate-100">
-                    <td class="py-5 pr-8">
-                        <span class="font-semibold text-lg">Accurate</span>
-                        <span class="block font-mono text-slate-400">μ = 42</span>
-                    </td>
-                    <td class="py-5 px-6 text-center">
-                        <span class="font-mono text-2xl font-bold text-emerald-600">0.23</span>
-                    </td>
-                    <td class="py-5 px-6 text-center">
-                        <span class="font-mono text-2xl text-slate-500">4.67</span>
-                    </td>
-                </tr>
-                <tr class="border-b border-slate-100">
-                    <td class="py-5 pr-8">
-                        <span class="font-semibold text-lg">Pretty good</span>
-                        <span class="block font-mono text-slate-400">μ = 40</span>
-                    </td>
-                    <td class="py-5 px-6 text-center">
-                        <span class="font-mono text-2xl text-slate-600">1.46</span>
-                    </td>
-                    <td class="py-5 px-6 text-center">
-                        <span class="font-mono text-2xl text-slate-500">4.75</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="py-5 pr-8">
-                        <span class="font-semibold text-lg">Inaccurate</span>
-                        <span class="block font-mono text-slate-400">μ = 30</span>
-                    </td>
-                    <td class="py-5 px-6 text-center">
-                        <span class="font-mono text-2xl font-bold text-red-500">11.44</span>
-                    </td>
-                    <td class="py-5 px-6 text-center">
-                        <span class="font-mono text-2xl text-slate-500">7.46</span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <p class="text-slate-400 text-base mt-6 text-center">Overconfidence when wrong is punished harder than honest uncertainty</p>
-    </div>
-</div>
-
-{% elif game.intro_slide == 2 %}
-<!-- Intro slide 2: points formula -->
-<div class="flex-1 flex flex-col items-center justify-center p-12 text-center">
-    <p class="text-slate-500 text-lg mb-4 uppercase tracking-widest font-medium">From CRPS to points</p>
-    <h2 class="text-4xl font-bold mb-12">Points range from 0 to 100. Higher is better.</h2>
-
-    <div class="bg-slate-50 rounded-3xl px-16 py-10 mb-10">
-        <p class="font-mono text-slate-400 text-xl mb-4">points =</p>
-        <p class="font-mono font-bold text-6xl text-indigo-600 leading-none">
-            100 &middot; e<sup class="text-3xl">−CRPS / scale</sup>
-        </p>
-        <p class="text-slate-400 mt-4 text-lg">where <em>scale</em> is set per question</p>
-    </div>
-
-    <div class="grid grid-cols-3 gap-8 max-w-3xl w-full text-left">
-        <div class="bg-slate-50 rounded-2xl p-5">
-            <p class="font-mono text-2xl font-bold text-emerald-600 mb-1">100</p>
-            <p class="text-slate-500">Perfect prediction (CRPS → 0)</p>
+<!-- Intro slide 1: visual comparison — landscape rows -->
+<div class="flex-1 flex flex-col p-6 bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900">
+    <h2 class="text-3xl font-bold mb-1 text-center">What is the Ultimate Answer to Life, The Universe, and Everything? <span class="text-slate-400 font-normal text-xl ml-2">answer = 42</span></h2>
+    <div class="flex flex-col gap-2 flex-1 min-h-0">
+        <div class="flex items-center bg-white rounded-xl shadow-md border border-emerald-100 flex-1 min-h-0 px-5">
+            <div class="w-48 shrink-0">
+                <p class="text-lg font-semibold text-emerald-600">Confident &amp; Correct</p>
+                <p class="font-mono text-slate-400 text-sm">μ=42, σ=1</p>
+            </div>
+            <svg id="intro-chart-a" class="flex-1 min-w-0 h-full" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid meet"></svg>
+            <p class="font-mono text-3xl font-bold text-emerald-600 w-28 text-right shrink-0">98 pts</p>
         </div>
-        <div class="bg-slate-50 rounded-2xl p-5">
-            <p class="font-mono text-2xl font-bold text-indigo-500 mb-1">37</p>
-            <p class="text-slate-500">Off by one scale unit</p>
+        <div class="flex items-center bg-white rounded-xl shadow-md border border-amber-100 flex-1 min-h-0 px-5">
+            <div class="w-48 shrink-0">
+                <p class="text-lg font-semibold text-amber-600">Uncertain &amp; Correct</p>
+                <p class="font-mono text-slate-400 text-sm">μ=42, σ=20</p>
+            </div>
+            <svg id="intro-chart-b" class="flex-1 min-w-0 h-full" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid meet"></svg>
+            <p class="font-mono text-3xl font-bold text-amber-600 w-28 text-right shrink-0">63 pts</p>
         </div>
-        <div class="bg-slate-50 rounded-2xl p-5">
-            <p class="font-mono text-2xl font-bold text-slate-400 mb-1">0</p>
-            <p class="text-slate-500">Wildly wrong (CRPS → ∞)</p>
-        </div>
-    </div>
-</div>
-
-{% elif game.intro_slide == 3 %}
-<!-- Intro slide 3: visual comparison -->
-<div class="flex-1 flex flex-col items-center justify-center p-8">
-    <h2 class="text-4xl font-bold mb-8 text-center">What this looks like</h2>
-    <div class="grid grid-cols-3 gap-6 w-full max-w-5xl">
-        <div class="flex flex-col items-center">
-            <p class="text-lg font-semibold text-emerald-600 mb-1">Confident &amp; Correct</p>
-            <p class="font-mono text-slate-400 text-sm mb-3">μ=42, σ=1 &rarr; CRPS 0.23</p>
-            <svg id="intro-chart-a" class="w-full" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
-        </div>
-        <div class="flex flex-col items-center">
-            <p class="text-lg font-semibold text-amber-500 mb-1">Uncertain &amp; Correct</p>
-            <p class="font-mono text-slate-400 text-sm mb-3">μ=42, σ=20 &rarr; CRPS 4.67</p>
-            <svg id="intro-chart-b" class="w-full" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
-        </div>
-        <div class="flex flex-col items-center">
-            <p class="text-lg font-semibold text-red-500 mb-1">Confident &amp; Wrong</p>
-            <p class="font-mono text-slate-400 text-sm mb-3">μ=30, σ=1 &rarr; CRPS 11.44</p>
-            <svg id="intro-chart-c" class="w-full" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="flex items-center bg-white rounded-xl shadow-md border border-red-100 flex-1 min-h-0 px-5">
+            <div class="w-48 shrink-0">
+                <p class="text-lg font-semibold text-red-600">Confident &amp; Wrong</p>
+                <p class="font-mono text-slate-400 text-sm">μ=30, σ=1</p>
+            </div>
+            <svg id="intro-chart-c" class="flex-1 min-w-0 h-full" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid meet"></svg>
+            <p class="font-mono text-3xl font-bold text-red-600 w-28 text-right shrink-0">32 pts</p>
         </div>
     </div>
 </div>
@@ -176,8 +91,8 @@
     function renderSingleDist(svgId, mu, sigma, answer, xMin, xMax) {
         var svg = document.getElementById(svgId);
         if (!svg) return;
-        var W = 800, H = 320;
-        var pad = {top: 20, right: 40, bottom: 50, left: 40};
+        var W = 1200, H = 360;
+        var pad = {top: 50, right: 30, bottom: 64, left: 30};
         var plotW = W - pad.left - pad.right, plotH = H - pad.top - pad.bottom;
         var N = 200, xs = [], ys = [];
         for (var i = 0; i < N; i++) {
@@ -215,13 +130,13 @@
             var tx = sx(tv);
             var tick = document.createElementNS(ns, "line");
             tick.setAttribute("x1", tx); tick.setAttribute("y1", sy(0));
-            tick.setAttribute("x2", tx); tick.setAttribute("y2", sy(0)+6);
+            tick.setAttribute("x2", tx); tick.setAttribute("y2", sy(0)+10);
             tick.setAttribute("stroke", "#94a3b8"); tick.setAttribute("stroke-width", "1");
             svg.appendChild(tick);
             var lbl = document.createElementNS(ns, "text");
-            lbl.setAttribute("x", tx); lbl.setAttribute("y", sy(0)+24);
+            lbl.setAttribute("x", tx); lbl.setAttribute("y", sy(0)+52);
             lbl.setAttribute("text-anchor", "middle"); lbl.setAttribute("fill", "#64748b");
-            lbl.setAttribute("font-size", "13"); lbl.setAttribute("font-family", "'JetBrains Mono',monospace");
+            lbl.setAttribute("font-size", "42"); lbl.setAttribute("font-family", "'JetBrains Mono',monospace");
             lbl.textContent = tv % 1 === 0 ? tv : tv.toFixed(1);
             svg.appendChild(lbl);
         }
@@ -235,16 +150,134 @@
         var ansLbl = document.createElementNS(ns, "text");
         ansLbl.setAttribute("x", ax); ansLbl.setAttribute("y", pad.top - 6);
         ansLbl.setAttribute("text-anchor", "middle"); ansLbl.setAttribute("fill", "#059669");
-        ansLbl.setAttribute("font-size", "14"); ansLbl.setAttribute("font-weight", "600");
+        ansLbl.setAttribute("font-size", "42"); ansLbl.setAttribute("font-weight", "600");
         ansLbl.setAttribute("font-family", "'JetBrains Mono',monospace");
         ansLbl.textContent = answer;
         svg.appendChild(ansLbl);
     }
     renderSingleDist("intro-chart-a", 42, 1, 42, 22, 62);
-    renderDistChart("intro-chart-b", [{mu: 42, sigma: 20}], "", 42);
+    renderSingleDist("intro-chart-b", 42, 20, 42, -30, 114);
     renderSingleDist("intro-chart-c", 30, 1, 42, 22, 62);
 })();
 </script>
+
+{% elif game.intro_slide == 2 %}
+<!-- Intro slide 2: CRPS score table -->
+<div class="flex-1 flex flex-col items-center justify-center p-12 bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900">
+    <h2 class="text-4xl font-bold mb-2 text-center">Continuous Ranked Probability Score</h2>
+    <p class="text-indigo-600 text-xl mb-10 text-center">Lower CRPS = better prediction.</p>
+
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-md border border-indigo-100 px-8 py-4">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b-2 border-slate-200">
+                    <th class="py-4 pr-8 text-slate-500 font-medium text-lg">Answer = 42</th>
+                    <th class="py-4 px-6 text-center">
+                        <span class="text-indigo-600 font-bold text-xl">Confident</span>
+                        <span class="block font-mono text-slate-400 text-base font-normal">σ = 1</span>
+                    </th>
+                    <th class="py-4 px-6 text-center">
+                        <span class="text-purple-600 font-bold text-xl">Uncertain</span>
+                        <span class="block font-mono text-slate-400 text-base font-normal">σ = 20</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b border-slate-100">
+                    <td class="py-5 pr-8">
+                        <span class="font-semibold text-lg">Accurate</span>
+                        <span class="block font-mono text-slate-400">μ = 42</span>
+                    </td>
+                    <td class="py-5 px-6 text-center">
+                        <span class="font-mono text-3xl font-bold text-emerald-600">0.23</span>
+                    </td>
+                    <td class="py-5 px-6 text-center">
+                        <span class="font-mono text-3xl text-slate-500">4.67</span>
+                    </td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                    <td class="py-5 pr-8">
+                        <span class="font-semibold text-lg">Pretty good</span>
+                        <span class="block font-mono text-slate-400">μ = 40</span>
+                    </td>
+                    <td class="py-5 px-6 text-center">
+                        <span class="font-mono text-3xl text-slate-700">1.46</span>
+                    </td>
+                    <td class="py-5 px-6 text-center">
+                        <span class="font-mono text-3xl text-slate-500">4.75</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="py-5 pr-8">
+                        <span class="font-semibold text-lg">Inaccurate</span>
+                        <span class="block font-mono text-slate-400">μ = 30</span>
+                    </td>
+                    <td class="py-5 px-6 text-center">
+                        <span class="font-mono text-3xl font-bold text-red-600">11.44</span>
+                    </td>
+                    <td class="py-5 px-6 text-center">
+                        <span class="font-mono text-3xl text-slate-500">7.46</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="text-indigo-600/60 text-lg mt-4 mb-2 text-center">Overconfidence when wrong is punished harder than honest uncertainty</p>
+    </div>
+</div>
+
+{% elif game.intro_slide == 3 %}
+<!-- Intro slide 3: points formula -->
+<div class="flex-1 flex flex-col items-center justify-center p-12 text-center bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900">
+    <p class="text-indigo-600 text-lg mb-4 uppercase tracking-widest font-medium">From CRPS to points</p>
+    <h2 class="text-4xl font-bold mb-12">Points range from 0 to 100. Higher is better.</h2>
+
+    <div class="bg-white rounded-3xl shadow-md border border-indigo-100 px-16 py-10 mb-10">
+        <p class="font-mono text-indigo-500 text-xl mb-4">points =</p>
+        <p class="font-mono font-bold text-6xl text-indigo-600 leading-none">
+            100 &middot; e<sup class="text-3xl">−CRPS / scale</sup>
+        </p>
+        <p class="text-slate-500 mt-4 text-lg">where <em>scale</em> is set per question</p>
+    </div>
+
+    <div class="grid grid-cols-3 gap-8 max-w-3xl w-full text-left">
+        <div class="bg-white rounded-2xl p-6 shadow-md border border-emerald-100">
+            <p class="font-mono text-3xl font-bold text-emerald-600 mb-1">100</p>
+            <p class="text-slate-600">Perfect prediction (CRPS → 0)</p>
+        </div>
+        <div class="bg-white rounded-2xl p-6 shadow-md border border-indigo-100">
+            <p class="font-mono text-3xl font-bold text-indigo-600 mb-1">37</p>
+            <p class="text-slate-600">Off by one scale unit</p>
+        </div>
+        <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-200">
+            <p class="font-mono text-3xl font-bold text-slate-400 mb-1">0</p>
+            <p class="text-slate-600">Wildly wrong<br>(CRPS → ∞)</p>
+        </div>
+    </div>
+</div>
+
+{% elif game.intro_slide == 4 %}
+<!-- Intro slide 4: how to play -->
+<div class="flex-1 flex flex-col items-center justify-center p-12 bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900">
+    <h2 class="text-5xl font-bold mb-12 bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">How to play</h2>
+    <div class="w-full max-w-3xl space-y-6">
+        <div class="flex items-start gap-6 bg-white rounded-2xl p-8 shadow-md border border-indigo-100">
+            <span class="text-4xl text-indigo-600 shrink-0">&#956;&#963;</span>
+            <p class="text-2xl text-slate-700">Input a <strong>mean</strong> (your guess) and a <strong>standard deviation</strong> (how sure you are)</p>
+        </div>
+        <div class="flex items-start gap-6 bg-white rounded-2xl p-8 shadow-md border border-indigo-100">
+            <span class="text-4xl shrink-0">&#9201;</span>
+            <p class="text-2xl text-slate-700">You have <strong>30 seconds</strong> to answer</p>
+        </div>
+        <div class="flex items-start gap-6 bg-white rounded-2xl p-8 shadow-md border border-indigo-100">
+            <span class="text-4xl shrink-0">&#128504;</span>
+            <p class="text-2xl text-slate-700">Speed isn't scored — as long as you're under the 30-second limit</p>
+        </div>
+        <div class="flex items-start gap-6 bg-white rounded-2xl p-8 shadow-md border border-indigo-100">
+            <span class="text-4xl shrink-0">&#129302;</span>
+            <p class="text-2xl text-slate-700">Please don't use AI assistants</p>
+        </div>
+    </div>
+</div>
 {% endif %}
 
 {% elif game.phase.value == "question_active" %}
@@ -414,8 +447,8 @@
 
 {% endif %}
 
-{% if game.phase.value != "lobby" %}
+{% if game.phase.value == "intro" and game.intro_slide == 0 %}
 <div class="fixed top-4 right-4">
-    <img src="/api/qr?{{ slug }}" alt="QR code" style="image-rendering: pixelated; width: 16vmin; height: 16vmin" class="rounded shadow-md">
+    <img src="/api/qr?{{ slug }}" alt="QR code" style="image-rendering: pixelated; width: 16vmin; height: 16vmin" class="rounded shadow-md border-4 border-white">
 </div>
 {% endif %}
