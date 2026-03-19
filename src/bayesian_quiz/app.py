@@ -68,9 +68,13 @@ templates.env.filters["fmt_number"] = _fmt_number
 
 def _mini_markup(text: str) -> markupsafe.Markup:
     import re
-    escaped = markupsafe.escape(text)
-    result = re.sub(r"`([^`]+)`", r"<code>\1</code>", str(escaped))
+    PLACEHOLDER = "\x00"
+    escaped = str(markupsafe.escape(text))
+    escaped = escaped.replace("\\*", PLACEHOLDER)
+    result = re.sub(r"`([^`]+)`", r"<code>\1</code>", escaped)
     result = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", result)
+    result = result.replace("&lt;br&gt;", "<br>")
+    result = result.replace(PLACEHOLDER, "*")
     return markupsafe.Markup(result)
 
 

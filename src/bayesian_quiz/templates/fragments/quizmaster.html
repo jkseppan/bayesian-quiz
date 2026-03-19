@@ -26,7 +26,7 @@
 
     {% elif game.phase.value == "question_active" %}
     <h2 class="text-lg font-semibold mb-2">Current Question</h2>
-    <p class="text-slate-300 mb-4">{{ game.current_question.text }}</p>
+    <p class="text-slate-300 mb-4">{{ game.current_question.text | mini_markup }}</p>
     <div>
         <p class="text-slate-400 text-sm">Responses</p>
         <p class="font-mono">{{ game.get_current_estimates() | length }} / {{ game.participants | length }}</p>

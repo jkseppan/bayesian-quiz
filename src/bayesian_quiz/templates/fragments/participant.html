@@ -50,7 +50,7 @@
         <span class="text-sm text-slate-500">Question {{ game.current_question_index + 1 }}</span>
         <div id="participant-countdown" class="text-3xl font-mono font-bold text-indigo-600 mt-2" data-deadline="{{ game.question_deadline or 0 }}">
         </div>
-        <h2 class="text-xl font-semibold mt-2">{{ game.current_question.text }}</h2>
+        <h2 class="text-xl font-semibold mt-2">{{ game.current_question.text | mini_markup }}</h2>
     </div>
 
     {% if already_answered %}
@@ -142,7 +142,7 @@
 <!-- Show result -->
 <div class="text-center mt-8">
     <p class="text-sm text-slate-500 mb-2">{{ participant.nickname }}</p>
-    <h2 class="text-xl font-semibold mb-4">{{ game.current_question.text }}</h2>
+    <h2 class="text-xl font-semibold mb-4">{{ game.current_question.text | mini_markup }}</h2>
 
     <div class="card border rounded-2xl p-6 mb-4">
         <p class="text-sm text-slate-500 mb-2">Correct answer</p>

@@ -57,32 +57,32 @@
 
 {% elif game.intro_slide == 1 %}
 <!-- Intro slide 1: visual comparison — landscape rows -->
-<div class="flex-1 flex flex-col p-6 bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900">
-    <h2 class="text-3xl font-bold mb-1 text-center">What is the Ultimate Answer to Life, The Universe, and Everything? <span class="text-slate-400 font-normal text-xl ml-2">answer = 42</span></h2>
-    <div class="flex flex-col gap-2 flex-1 min-h-0">
-        <div class="flex items-center bg-white rounded-xl shadow-md border border-emerald-100 flex-1 min-h-0 px-5">
-            <div class="w-48 shrink-0">
-                <p class="text-lg font-semibold text-emerald-600">Confident &amp; Correct</p>
-                <p class="font-mono text-slate-400 text-sm">μ=42, σ=1</p>
+<div class="flex-1 flex flex-col p-[1vmin] bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900 overflow-hidden max-h-screen">
+    <h2 class="text-[2.5vmin] font-bold mb-[0.5vmin] text-center shrink-0">What is the Ultimate Answer to Life, The Universe, and Everything? <span class="text-slate-400 font-normal text-[1.8vmin] ml-2">answer = 42</span></h2>
+    <div class="flex flex-col gap-[0.5vmin] flex-1 min-h-0">
+        <div class="flex items-center bg-white rounded-xl shadow-md border border-emerald-100 flex-1 min-h-0 px-[2vmin] overflow-hidden">
+            <div class="w-[16vmin] shrink-0">
+                <p class="text-[2vmin] font-semibold text-emerald-600">Confident &amp; Correct</p>
+                <p class="font-mono text-slate-400 text-[1.4vmin]">μ=42, σ=1</p>
             </div>
-            <svg id="intro-chart-a" class="flex-1 min-w-0 h-full" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid meet"></svg>
-            <p class="font-mono text-3xl font-bold text-emerald-600 w-28 text-right shrink-0">98 pts</p>
+            <svg id="intro-chart-a" class="flex-1 min-w-0 w-full" viewBox="0 0 1200 180" preserveAspectRatio="xMidYMid meet"></svg>
+            <p class="font-mono text-[3.5vmin] font-bold text-emerald-600 w-[14vmin] text-right shrink-0">98 pts</p>
         </div>
-        <div class="flex items-center bg-white rounded-xl shadow-md border border-amber-100 flex-1 min-h-0 px-5">
-            <div class="w-48 shrink-0">
-                <p class="text-lg font-semibold text-amber-600">Uncertain &amp; Correct</p>
-                <p class="font-mono text-slate-400 text-sm">μ=42, σ=20</p>
+        <div class="flex items-center bg-white rounded-xl shadow-md border border-amber-100 flex-1 min-h-0 px-[2vmin] overflow-hidden">
+            <div class="w-[16vmin] shrink-0">
+                <p class="text-[2vmin] font-semibold text-amber-600">Uncertain &amp; Correct</p>
+                <p class="font-mono text-slate-400 text-[1.4vmin]">μ=42, σ=20</p>
             </div>
-            <svg id="intro-chart-b" class="flex-1 min-w-0 h-full" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid meet"></svg>
-            <p class="font-mono text-3xl font-bold text-amber-600 w-28 text-right shrink-0">63 pts</p>
+            <svg id="intro-chart-b" class="flex-1 min-w-0 w-full" viewBox="0 0 1200 180" preserveAspectRatio="xMidYMid meet"></svg>
+            <p class="font-mono text-[3.5vmin] font-bold text-amber-600 w-[14vmin] text-right shrink-0">63 pts</p>
         </div>
-        <div class="flex items-center bg-white rounded-xl shadow-md border border-red-100 flex-1 min-h-0 px-5">
-            <div class="w-48 shrink-0">
-                <p class="text-lg font-semibold text-red-600">Confident &amp; Wrong</p>
-                <p class="font-mono text-slate-400 text-sm">μ=30, σ=1</p>
+        <div class="flex items-center bg-white rounded-xl shadow-md border border-red-100 flex-1 min-h-0 px-[2vmin] overflow-hidden">
+            <div class="w-[16vmin] shrink-0">
+                <p class="text-[2vmin] font-semibold text-red-600">Confident &amp; Wrong</p>
+                <p class="font-mono text-slate-400 text-[1.4vmin]">μ=30, σ=1</p>
             </div>
-            <svg id="intro-chart-c" class="flex-1 min-w-0 h-full" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMid meet"></svg>
-            <p class="font-mono text-3xl font-bold text-red-600 w-28 text-right shrink-0">32 pts</p>
+            <svg id="intro-chart-c" class="flex-1 min-w-0 w-full" viewBox="0 0 1200 180" preserveAspectRatio="xMidYMid meet"></svg>
+            <p class="font-mono text-[3.5vmin] font-bold text-red-600 w-[14vmin] text-right shrink-0">32 pts</p>
         </div>
     </div>
 </div>
@@ -91,8 +91,8 @@
     function renderSingleDist(svgId, mu, sigma, answer, xMin, xMax) {
         var svg = document.getElementById(svgId);
         if (!svg) return;
-        var W = 1200, H = 360;
-        var pad = {top: 50, right: 30, bottom: 64, left: 30};
+        var W = 1200, H = 180;
+        var pad = {top: 28, right: 30, bottom: 38, left: 30};
         var plotW = W - pad.left - pad.right, plotH = H - pad.top - pad.bottom;
         var N = 200, xs = [], ys = [];
         for (var i = 0; i < N; i++) {
@@ -130,13 +130,13 @@
             var tx = sx(tv);
             var tick = document.createElementNS(ns, "line");
             tick.setAttribute("x1", tx); tick.setAttribute("y1", sy(0));
-            tick.setAttribute("x2", tx); tick.setAttribute("y2", sy(0)+10);
+            tick.setAttribute("x2", tx); tick.setAttribute("y2", sy(0)+5);
             tick.setAttribute("stroke", "#94a3b8"); tick.setAttribute("stroke-width", "1");
             svg.appendChild(tick);
             var lbl = document.createElementNS(ns, "text");
-            lbl.setAttribute("x", tx); lbl.setAttribute("y", sy(0)+52);
+            lbl.setAttribute("x", tx); lbl.setAttribute("y", sy(0)+30);
             lbl.setAttribute("text-anchor", "middle"); lbl.setAttribute("fill", "#64748b");
-            lbl.setAttribute("font-size", "42"); lbl.setAttribute("font-family", "'JetBrains Mono',monospace");
+            lbl.setAttribute("font-size", "26"); lbl.setAttribute("font-family", "'JetBrains Mono',monospace");
             lbl.textContent = tv % 1 === 0 ? tv : tv.toFixed(1);
             svg.appendChild(lbl);
         }
@@ -150,7 +150,7 @@
         var ansLbl = document.createElementNS(ns, "text");
         ansLbl.setAttribute("x", ax); ansLbl.setAttribute("y", pad.top - 6);
         ansLbl.setAttribute("text-anchor", "middle"); ansLbl.setAttribute("fill", "#059669");
-        ansLbl.setAttribute("font-size", "42"); ansLbl.setAttribute("font-weight", "600");
+        ansLbl.setAttribute("font-size", "26"); ansLbl.setAttribute("font-weight", "600");
         ansLbl.setAttribute("font-family", "'JetBrains Mono',monospace");
         ansLbl.textContent = answer;
         svg.appendChild(ansLbl);
@@ -289,7 +289,7 @@
 
     <div class="flex-1 flex items-center justify-center">
         <h2 class="text-5xl font-semibold text-center max-w-4xl leading-tight">
-            {{ game.current_question.text }}
+            {{ game.current_question.text | mini_markup }}
         </h2>
     </div>
 
@@ -322,7 +322,7 @@
 {% elif game.phase.value == "show_distribution" %}
 <!-- Layout matches reveal_answer so the SVG doesn't jump on transition -->
 <div class="flex-1 flex flex-col items-center px-6 py-10 max-h-screen overflow-hidden">
-    <h2 class="text-3xl font-semibold mb-6 shrink-0">{{ game.current_question.text }}</h2>
+    <h2 class="text-3xl font-semibold mb-6 shrink-0">{{ game.current_question.text | mini_markup }}</h2>
 
     {% set estimates = game.get_current_estimates() %}
     {% if estimates %}
@@ -352,7 +352,7 @@
 {% elif game.phase.value == "reveal_answer" %}
 <!-- Reveal correct answer -->
 <div class="flex-1 flex flex-col items-center px-6 py-10 max-h-screen overflow-hidden">
-    <h2 class="text-3xl font-semibold mb-6 shrink-0">{{ game.current_question.text }}</h2>
+    <h2 class="text-3xl font-semibold mb-6 shrink-0">{{ game.current_question.text | mini_markup }}</h2>
 
     {% set estimates = game.get_current_estimates() %}
     {% if estimates %}
