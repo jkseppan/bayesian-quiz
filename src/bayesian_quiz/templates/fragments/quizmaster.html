@@ -39,7 +39,7 @@
     {% elif game.phase.value == "reveal_answer" %}
     <h2 class="text-lg font-semibold mb-2">Answer Revealed</h2>
     <p class="font-mono text-2xl text-emerald-400">{{ game.current_question.answer | fmt_number }} {{ game.current_question.unit }}</p>
-    <p class="text-slate-400 text-sm mt-2">{{ game.current_question.fun_fact }}</p>
+    <p class="text-slate-400 text-sm mt-2">{{ game.current_question.fun_fact | mini_markup }}</p>
 
     {% elif game.phase.value == "question_scores" %}
     <h2 class="text-lg font-semibold mb-4">Question Scores</h2>

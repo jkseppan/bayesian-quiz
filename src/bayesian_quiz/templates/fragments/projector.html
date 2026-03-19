@@ -344,7 +344,7 @@
     {% endif %}
 
     <div class="shrink-0 text-center max-w-2xl relative">
-        <p class="text-xl invisible" aria-hidden="true">{{ game.current_question.fun_fact }}</p>
+        <p class="text-xl invisible" aria-hidden="true">{{ game.current_question.fun_fact | mini_markup }}</p>
         <p class="text-xl text-slate-500 absolute inset-x-0 top-0">{{ estimates | length }} estimates received</p>
     </div>
 </div>
@@ -370,7 +370,7 @@
     {% endif %}
 
     <p class="text-xl text-slate-600 max-w-2xl text-center shrink-0">
-        {{ game.current_question.fun_fact }}
+        {{ game.current_question.fun_fact | mini_markup }}
     </p>
 </div>
 

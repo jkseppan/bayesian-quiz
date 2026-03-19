@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Annotated
 from uuid import uuid4
 
+import markupsafe
 import qrcode
 from fastapi import Cookie, Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, StreamingResponse
@@ -63,6 +64,17 @@ def _fmt_number(value: float) -> str:
 
 
 templates.env.filters["fmt_number"] = _fmt_number
+
+
+def _mini_markup(text: str) -> markupsafe.Markup:
+    import re
+    escaped = markupsafe.escape(text)
+    result = re.sub(r"`([^`]+)`", r"<code>\1</code>", str(escaped))
+    result = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", result)
+    return markupsafe.Markup(result)
+
+
+templates.env.filters["mini_markup"] = _mini_markup
 
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
