@@ -10,7 +10,7 @@ from enum import StrEnum
 from bayesian_quiz.scoring import crps_normal, crps_to_points
 
 QUESTION_DURATION_SECONDS = 30
-GRACE_PERIOD_SECONDS = 1
+GRACE_PERIOD_SECONDS = 3
 INTRO_SLIDE_COUNT = 5
 _WHITESPACE_RUN = re.compile(r"\s+")
 

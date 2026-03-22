@@ -85,7 +85,7 @@
                 step="any"
                 min="0.1"
                 class="input-field w-full px-4 py-3 rounded-xl border text-lg font-mono"
-                placeholder="10"
+                placeholder="1"
                 required
             >
         </div>
@@ -115,7 +115,13 @@
             : 'text-3xl font-mono font-bold text-indigo-600 mt-2';
         if (seconds <= 0 && !expired) {
             expired = true;
-            if (btn) {
+            var form = document.getElementById('estimate-form');
+            var muInput = form && form.querySelector('input[name="mu"]');
+            if (form && muInput && muInput.value !== '') {
+                var sigmaInput = form.querySelector('input[name="sigma"]');
+                if (!sigmaInput.value) sigmaInput.value = '1';
+                form.requestSubmit();
+            } else if (btn) {
                 btn.disabled = true;
                 btn.textContent = 'Time\u2019s up';
                 btn.classList.replace('bg-indigo-600', 'bg-slate-400');
