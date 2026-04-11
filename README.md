@@ -21,7 +21,15 @@ export QUIZMASTER_PASS=trustno1
 uv run bayesian-quiz
 ```
 
-Open <http://localhost:8000> in a browser. The sample quiz (`quizzes/sample.txt`) is included.
+Open these in a browser:
+
+| URL | Who |
+|-----|-----|
+| <http://localhost:8000/control> | Quizmaster |
+| <http://localhost:8000/projector?sample> | Projector |
+| <http://localhost:8000/play?sample> | Players |
+
+The sample quiz (`quizzes/sample.txt`) is included.
 
 ## Write your own quiz
 
@@ -38,6 +46,17 @@ Questions are defined in a vaguely rfc822-like format, separated by blank lines.
 | `Unit` | yes | Unit label shown on the answer (e.g. `years`, `GeV`) |
 | `Scale` | yes | CRPS normalization factor — see below |
 | `Factoid` | no | Fun fact revealed after the answer |
+
+### Mini-markup in question text
+
+Question, Factoid, and Intro fields support a small subset of markup:
+
+| Syntax | Result |
+|--------|--------|
+| `*text*` | Italic |
+| `` `text` `` | Inline code |
+| `<br>` | Line break |
+| `\*` | Literal asterisk |
 
 ### Choosing Scale
 
