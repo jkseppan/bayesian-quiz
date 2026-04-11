@@ -95,6 +95,10 @@ class GameState:
         return max(0, int(QUESTION_DURATION_SECONDS - elapsed))
 
     @property
+    def intro_slide_count(self) -> int:
+        return INTRO_SLIDE_COUNT
+
+    @property
     def current_question(self) -> Question | None:
         if 0 <= self.current_question_index < len(self.questions):
             return self.questions[self.current_question_index]

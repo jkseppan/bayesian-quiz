@@ -21,7 +21,7 @@
     <p class="text-slate-300 font-mono text-2xl">{{ game.participants | length }} joined</p>
 
     {% elif game.phase.value == "intro" %}
-    <h2 class="text-lg font-semibold mb-2">CRPS Intro — Slide {{ game.intro_slide + 1 }}/3</h2>
+    <h2 class="text-lg font-semibold mb-2">CRPS Intro — Slide {{ game.intro_slide + 1 }}/{{ game.intro_slide_count }}</h2>
     <p class="text-slate-400 text-sm">Players can still join. Projector shows the scoring explanation.</p>
 
     {% elif game.phase.value == "question_intro" %}
@@ -91,7 +91,7 @@
     {% if game.phase.value == "lobby" %}
         Show CRPS Intro
     {% elif game.phase.value == "intro" %}
-        {% if game.intro_slide < 3 %}Next Slide &rarr;{% else %}Start Quiz{% endif %}
+        {% if game.intro_slide < game.intro_slide_count - 1 %}Next Slide &rarr;{% else %}Start Quiz{% endif %}
     {% elif game.phase.value == "question_intro" %}
         Start Timer &rarr;
     {% elif game.phase.value == "question_active" %}
