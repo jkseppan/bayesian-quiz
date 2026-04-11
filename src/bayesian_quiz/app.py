@@ -200,7 +200,7 @@ async def index(request: Request):
 async def projector(request: Request):
     slug, game = _get_game(request)
     return templates.TemplateResponse(
-        request, "projector.html", {"game": game.state, "slug": slug}
+        request, "projector.html", {"game": game.state, "slug": slug, "join_domain": JOIN_DOMAIN}
     )
 
 
@@ -251,7 +251,7 @@ async def fragment_projector(request: Request):
     return templates.TemplateResponse(
         request,
         "fragments/projector.html",
-        {"game": game.state, "slug": slug},
+        {"game": game.state, "slug": slug, "join_domain": JOIN_DOMAIN},
     )
 
 
