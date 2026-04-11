@@ -32,6 +32,7 @@ class GamePhase(StrEnum):
 
     LOBBY = "lobby"
     INTRO = "intro"
+    QUESTION_INTRO = "question_intro"
     QUESTION_ACTIVE = "question_active"
     SHOW_DISTRIBUTION = "show_distribution"
     REVEAL_ANSWER = "reveal_answer"
@@ -71,6 +72,7 @@ class Question:
     unit: str = ""
     fun_fact: str = ""
     scale: float = 10.0
+    intro: str = ""
 
 
 @dataclass
@@ -206,11 +208,12 @@ class GameManager:
                 await self.broadcast("phase_changed")
                 return
             self.state.intro_slide = 0
-            await self._enter_question_active()
+            await self._enter_question()
             return
 
         transitions = {
             GamePhase.LOBBY: GamePhase.INTRO,
+            GamePhase.QUESTION_INTRO: GamePhase.QUESTION_ACTIVE,
             GamePhase.QUESTION_ACTIVE: GamePhase.SHOW_DISTRIBUTION,
             GamePhase.SHOW_DISTRIBUTION: GamePhase.REVEAL_ANSWER,
             GamePhase.REVEAL_ANSWER: GamePhase.QUESTION_SCORES,
@@ -236,13 +239,21 @@ class GameManager:
     async def start_quiz(self) -> None:
         """Skip intro and jump directly to the first question."""
         self.state.intro_slide = 0
-        await self._enter_question_active()
+        await self._enter_question()
 
     async def back_slide(self) -> None:
         """Go back one intro slide. No-op if not in INTRO or already at slide 0."""
         if self.state.phase == GamePhase.INTRO and self.state.intro_slide > 0:
             self.state.intro_slide -= 1
             await self.broadcast("phase_changed")
+
+    async def _enter_question(self) -> None:
+        question = self.state.current_question
+        if question and question.intro:
+            self.state.phase = GamePhase.QUESTION_INTRO
+            await self.broadcast("phase_changed")
+        else:
+            await self._enter_question_active()
 
     async def _enter_question_active(self) -> None:
         self.state.phase = GamePhase.QUESTION_ACTIVE
@@ -266,6 +277,9 @@ class GameManager:
         """Move to next question or end the game."""
         if self.state.current_question_index < len(self.state.questions) - 1:
             self.state.current_question_index += 1
+            question = self.state.current_question
+            if question and question.intro:
+                return GamePhase.QUESTION_INTRO
             return GamePhase.QUESTION_ACTIVE
         return GamePhase.END
 

@@ -6,12 +6,19 @@ Factoid: Python was conceived in the late 1980s by Guido van Rossum at CWI in th
   It was named after Monty Python, not the snake.
   The first public release was Python 0.9.0 in February 1991.
 
+Intro: scikit-learn is the most widely used classical ML library in Python.
+  It provides tools for classification, regression, clustering, and dimensionality reduction.
+  On GitHub, anyone can contribute — from fixing a typo to implementing a new algorithm.
 Question: How many contributors does scikit-learn have on GitHub?
 Answer: 3100.0
 Unit: contributors
 Scale: 1000.0
 Factoid: scikit-learn started as a Google Summer of Code project in 2007.
 
+Intro: The *Standard Model* of particle physics predicts that particles acquire mass
+  through interaction with the Higgs field. The associated boson's mass is not predicted
+  by the theory — it had to be measured experimentally. The unit `GeV` (giga-electronvolt)
+  is the standard energy/mass unit in particle physics.
 Question: What is the mass of the Higgs boson in GeV?
 Answer: 125.25
 Unit: GeV

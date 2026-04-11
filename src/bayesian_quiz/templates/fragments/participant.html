@@ -41,6 +41,15 @@
     </div>
 </div>
 
+{% elif game.phase.value == "question_intro" %}
+<!-- Question intro -->
+<div class="text-center mt-8">
+    <p class="text-sm text-slate-500 mb-2">{{ participant.nickname }}</p>
+    <span class="text-sm text-slate-500">Question {{ game.current_question_index + 1 }}</span>
+    <h2 class="text-xl font-semibold mt-4">Get ready...</h2>
+    <p class="text-slate-500 mt-2">Look at the projector for some context</p>
+</div>
+
 {% elif game.phase.value == "question_active" %}
 <!-- Question input -->
 {% set already_answered = game.current_question_index in participant.estimates %}

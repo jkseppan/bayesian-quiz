@@ -109,3 +109,48 @@ async def test_scores_not_overwritten_on_second_reveal(gm):
     score_second = gm.state.participants["p1"].scores[0]
 
     assert score_second == score_first
+
+
+@pytest.mark.anyio
+async def test_question_intro_phase_when_intro_present():
+    gm = GameManager([
+        Question(text="Q1", answer=100.0, intro="Some context"),
+        Question(text="Q2", answer=200.0),
+    ])
+    await gm.add_participant("p1", "Alice")
+    await advance_to(gm, GamePhase.INTRO)
+    # Advance past intro slides to first question — should land on QUESTION_INTRO
+    while gm.state.phase == GamePhase.INTRO:
+        await gm.advance_phase()
+    assert gm.state.phase == GamePhase.QUESTION_INTRO
+    assert gm.state.question_started_at is None
+
+    await gm.advance_phase()
+    assert gm.state.phase == GamePhase.QUESTION_ACTIVE
+    assert gm.state.question_started_at is not None
+
+
+@pytest.mark.anyio
+async def test_no_question_intro_without_intro_field():
+    gm = GameManager([
+        Question(text="Q1", answer=100.0),
+    ])
+    await advance_to(gm, GamePhase.INTRO)
+    while gm.state.phase == GamePhase.INTRO:
+        await gm.advance_phase()
+    assert gm.state.phase == GamePhase.QUESTION_ACTIVE
+
+
+@pytest.mark.anyio
+async def test_next_question_with_intro():
+    gm = GameManager([
+        Question(text="Q1", answer=100.0),
+        Question(text="Q2", answer=200.0, intro="Context for Q2"),
+    ])
+    await gm.add_participant("p1", "Alice")
+    await advance_to(gm, GamePhase.QUESTION_ACTIVE)
+    await gm.submit_estimate("p1", mu=100.0, sigma=5.0)
+    await advance_to(gm, GamePhase.LEADERBOARD)
+    await gm.advance_phase()
+    assert gm.state.phase == GamePhase.QUESTION_INTRO
+    assert gm.state.current_question_index == 1

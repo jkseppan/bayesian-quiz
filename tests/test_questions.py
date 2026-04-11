@@ -43,6 +43,16 @@ class TestParseQuizFile:
         assert qs[0].unit == ""
         assert qs[0].scale == 10.0
         assert qs[0].fun_fact == ""
+        assert qs[0].intro == ""
+
+    def test_intro_field(self):
+        text = (
+            "Intro: Some context about the question.\n"
+            "Question: What is X?\n"
+            "Answer: 42.0\n"
+        )
+        qs = parse_quiz_file(text)
+        assert qs[0].intro == "Some context about the question."
 
     def test_missing_question_field(self):
         text = "Answer: 42.0\n"

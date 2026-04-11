@@ -280,6 +280,15 @@
 </div>
 {% endif %}
 
+{% elif game.phase.value == "question_intro" %}
+<!-- Question intro: context shown before timer starts -->
+<div class="flex-1 flex flex-col items-center justify-center p-12 bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900">
+    <span class="text-slate-500 mb-4">Question {{ game.current_question_index + 1 }} of {{ game.questions | length }}</span>
+    <div class="bg-white rounded-2xl shadow-md border border-indigo-100 px-12 py-10 max-w-4xl">
+        <p class="text-3xl leading-relaxed text-center">{{ game.current_question.intro | mini_markup }}</p>
+    </div>
+</div>
+
 {% elif game.phase.value == "question_active" %}
 <!-- Question: Show question with countdown -->
 <div class="flex-1 flex flex-col p-8">

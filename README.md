@@ -32,6 +32,7 @@ Questions are defined in a vaguely rfc822-like format, separated by blank lines.
 
 | Field | Required | Description |
 |-------|----------|-------------|
+| `Intro` | no | Text shown on the screen before the question itself |
 | `Question` | yes | The question text shown to players |
 | `Answer` | yes | The correct numerical answer |
 | `Unit` | yes | Unit label shown on the answer (e.g. `years`, `GeV`) |

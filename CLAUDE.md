@@ -64,17 +64,18 @@ Players on their phones.
 ## State Machine
 
 ```
-LOBBY → INTRO → QUESTION_ACTIVE → SHOW_DISTRIBUTION → REVEAL_ANSWER → QUESTION_SCORES → LEADERBOARD → (next question or END)
+LOBBY → INTRO → [QUESTION_INTRO →] QUESTION_ACTIVE → SHOW_DISTRIBUTION → REVEAL_ANSWER → QUESTION_SCORES → LEADERBOARD → (next question or END)
 ```
 
 1. **LOBBY**: QR code displayed, players join, quizmaster waits for enough players
 2. **INTRO**: 4 slides explaining CRPS scoring (skippable)
-3. **QUESTION_ACTIVE**: Question displayed, 30-second countdown; players submit estimates; 1-second grace period after timer expires
-4. **SHOW_DISTRIBUTION**: Timer ended, show aggregate of all guesses (correct answer still hidden)
-5. **REVEAL_ANSWER**: Show correct answer, fun fact
-6. **QUESTION_SCORES**: Show per-question top scorers
-7. **LEADERBOARD**: Show cumulative standings
-8. Repeat from step 3, or if last question → final leaderboard + prize announcement
+3. **QUESTION_INTRO** (optional): If the question has an `Intro` field, show context on projector before timer starts
+4. **QUESTION_ACTIVE**: Question displayed, 30-second countdown; players submit estimates; 1-second grace period after timer expires
+5. **SHOW_DISTRIBUTION**: Timer ended, show aggregate of all guesses (correct answer still hidden)
+6. **REVEAL_ANSWER**: Show correct answer, fun fact
+7. **QUESTION_SCORES**: Show per-question top scorers
+8. **LEADERBOARD**: Show cumulative standings
+9. Repeat from step 3, or if last question → final leaderboard + prize announcement
 
 ## Sample Questions
 
@@ -198,6 +199,7 @@ Unit: years
 Scale: 10.0
 Factoid: Python was conceived in the late 1980s by Guido van Rossum.
 
+Intro: Some context shown on the projector before the timer starts.
 Question: What is the mass of the Higgs boson in GeV?
 Answer: 125.25
 Unit: GeV
@@ -206,6 +208,7 @@ Factoid: Discovered at CERN in 2012.
 ```
 
 `Scale` controls CRPS normalization — choose it to match the natural uncertainty of the question.
+`Intro` (optional) displays context on the projector before the question timer starts.
 
 ## Future Ideas
 

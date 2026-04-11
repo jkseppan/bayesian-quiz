@@ -395,7 +395,8 @@ async def advance(request: Request):
 async def start_quiz(request: Request):
     _slug, game = _get_game(request)
     await game.start_quiz()
-    _schedule_auto_advance(game)
+    if game.state.phase == GamePhase.QUESTION_ACTIVE:
+        _schedule_auto_advance(game)
     return {"phase": game.state.phase.value}
 
 

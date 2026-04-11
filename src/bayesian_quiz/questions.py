@@ -43,6 +43,7 @@ def parse_quiz_file(text: str) -> list[Question]:
             unit=fields.get("unit", ""),
             fun_fact=fields.get("factoid", ""),
             scale=scale,
+            intro=fields.get("intro", ""),
         ))
     return questions
 
