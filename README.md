@@ -1,10 +1,31 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.14+](https://img.shields.io/badge/python-3.14+-blue.svg)](https://www.python.org/downloads/)
 [![Vibe-coded](https://img.shields.io/badge/Vibe-coded-c15f3c?logo=Claude&labelColor=f4f3ee)](https://x.com/i/trending/2006300642797625572)
+<a href="https://railway.com/deploy/bayesian-quiz?referralCode=TDYt-6"><img src="https://railway.com/button.svg" height="28" align="right" alt="Deploy on Railway"></a>
 
 # Bayesian Quiz
 
 A real-time pub quiz for data scientists where players estimate numerical answers with uncertainty. Instead of just guessing a number, players submit a mean (μ) and standard deviation (σ). Scoring rewards **calibrated confidence** using the Continuous Ranked Probability Score (CRPS) — being right matters, but so does knowing how sure you are.
+
+---
+
+It's like a normal pub quiz:
+
+![Question on the projector with countdown timer](doc/question.png)
+
+But players give both their guess and a standard deviation:
+
+![Two input fields, mean and deviation](doc/user.png)
+
+Once the time is up, see what the crowd thinks...
+
+![Aggregate of all player distributions](doc/distributions.png)
+
+and what the correct answer is:
+
+![Correct answer revealed](doc/correct.png)
+
+---
 
 ## Prerequisites
 
