@@ -180,6 +180,11 @@ async def events(request: Request):
     )
 
 
+@app.get("/healthz")
+async def healthz():
+    return {"status": "ok"}
+
+
 # --- Page Routes ---
 
 
@@ -414,7 +419,11 @@ async def reset(request: Request):
     return {"status": "reset"}
 
 
-JOIN_DOMAIN = os.environ.get("JOIN_DOMAIN", "pydata.win")
+JOIN_DOMAIN = (
+    os.environ.get("JOIN_DOMAIN")
+    or os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+    or "pydata.win"
+)
 
 
 @app.get("/api/qr")
