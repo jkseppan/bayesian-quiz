@@ -12,7 +12,13 @@ from uuid import uuid4
 import markupsafe
 import qrcode
 from fastapi import Cookie, Depends, FastAPI, Form, HTTPException, Request, status
-from fastapi.responses import HTMLResponse, RedirectResponse, Response, StreamingResponse
+from fastapi.responses import (
+    FileResponse,
+    HTMLResponse,
+    RedirectResponse,
+    Response,
+    StreamingResponse,
+)
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -81,6 +87,37 @@ def _mini_markup(text: str) -> markupsafe.Markup:
 templates.env.filters["mini_markup"] = _mini_markup
 
 STATIC_DIR = Path(__file__).parent / "static"
+
+_ICON_CACHE_HEADERS = {"Cache-Control": "public, max-age=31536000, immutable"}
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    return FileResponse(
+        STATIC_DIR / "favicon.ico",
+        media_type="image/x-icon",
+        headers=_ICON_CACHE_HEADERS,
+    )
+
+
+@app.get("/icon.svg")
+async def icon_svg():
+    return FileResponse(
+        STATIC_DIR / "icon.svg",
+        media_type="image/svg+xml",
+        headers=_ICON_CACHE_HEADERS,
+    )
+
+
+@app.get("/apple-touch-icon.png")
+async def apple_touch_icon():
+    return FileResponse(
+        STATIC_DIR / "apple-touch-icon.png",
+        media_type="image/png",
+        headers=_ICON_CACHE_HEADERS,
+    )
+
+
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 MOCKUPS_DIR = Path(__file__).parent.parent.parent / "mockups"
