@@ -178,3 +178,54 @@ this way appear alongside any files present in the deployment.
 
 > **Note**: `<slug>` must be lowercase letters, digits, underscores, or hyphens
 > (1–64 characters).
+
+## Deploying to exe.dev
+
+[exe.dev](https://exe.dev) hands you a Linux VM with a managed HTTPS proxy in
+front. The `Justfile` has `exe-*` recipes that drive an end-to-end deploy; the
+runbook lives in [`deploy/README.md`](deploy/README.md).
+
+```bash
+export QUIZMASTER_PASS=<your-password>
+export EXE_VM=mybox          # optional; defaults to pydata-win
+just exe-deploy
+```
+
+This creates the VM, runs `deploy/exe-setup.sh` (which clones the fork pointed
+to by your `origin` remote, runs `uv sync`, and installs a `systemd` unit on
+port 8000), waits for the setup to finish and dumps its journal, then encrypts
+`$QUIZMASTER_PASS` *on the VM itself* with `systemd-creds` and starts the
+service. The plaintext password never leaves your shell.
+
+### Uploading quiz files
+
+```bash
+just exe-quiz <slug>             # uploads quizzes/<slug>.txt
+just exe-quiz <slug> path/to.txt # explicit source path
+```
+
+This `scp`'s the file to `/opt/bayesian-quiz/quizzes/<slug>.txt` on the VM.
+`list_quizzes()` and `load_quiz()` re-read the directory on every request, so
+the new quiz shows up in the quizmaster's pick page immediately — no restart
+needed. Same slug rules as Railway: lowercase letters, digits, underscores or
+hyphens, 1–64 characters.
+
+### Routine ops
+
+| Goal | Command |
+| --- | --- |
+| Pull latest and restart | `just exe-update` |
+| Upload a quiz file | `just exe-quiz <slug>` |
+| Tail logs | `just exe-logs` |
+| Rotate the password | `export QUIZMASTER_PASS=<new>; just exe-set-pass` |
+| Open a shell on the VM | `just exe-ssh` |
+| Destroy the VM | `just exe-rm` |
+
+### Differences from Railway
+
+- No git-push-to-deploy — `just exe-update` SSHes in and pulls.
+- `exe-quiz` `scp`'s the file into `/opt/bayesian-quiz/quizzes/`; the
+  quizmaster's pick page re-reads the directory on every request, so no
+  restart is needed (no `QUIZ_*` env-var trick required).
+- The quizmaster password is provisioned via `systemd-creds` rather than a
+  platform secret store.

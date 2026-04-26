@@ -37,9 +37,19 @@ app = FastAPI(title="Bayesian Quiz")
 
 _basic = HTTPBasic()
 QUIZMASTER_USER = os.environ.get("QUIZMASTER_USER", "quizmaster")
-QUIZMASTER_PASS = os.environ.get("QUIZMASTER_PASS")
-if not QUIZMASTER_PASS:
-    raise RuntimeError("QUIZMASTER_PASS environment variable must be set")
+
+
+def _load_quizmaster_pass() -> str:
+    pw = os.environ.get("QUIZMASTER_PASS")
+    if pw:
+        return pw
+    pass_file = os.environ.get("QUIZMASTER_PASS_FILE")
+    if pass_file:
+        return Path(pass_file).read_text().rstrip("\n")
+    raise RuntimeError("QUIZMASTER_PASS or QUIZMASTER_PASS_FILE must be set")
+
+
+QUIZMASTER_PASS = _load_quizmaster_pass()
 
 
 def _require_quizmaster(credentials: Annotated[HTTPBasicCredentials, Depends(_basic)]):
