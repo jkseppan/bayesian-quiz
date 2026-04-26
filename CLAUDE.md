@@ -146,11 +146,31 @@ Participants are identified by a UUID stored in an httponly, SameSite=lax cookie
 
 ### Deployment
 Environment variables:
-- `QUIZMASTER_PASS` (required) — HTTP basic auth password for quizmaster
+- `QUIZMASTER_PASS` / `QUIZMASTER_PASS_FILE` — HTTP basic auth password for quizmaster. Exactly one is required; `_FILE` reads the password from a path (used by the systemd-creds setup on exe.dev).
 - `QUIZMASTER_USER` (default: `quizmaster`) — HTTP basic auth username
 - `JOIN_DOMAIN` (default: `pydata.win`) — domain shown in QR code on projector
 
-Run with: `uv run uvicorn bayesian_quiz:app` (see Procfile).
+Run locally with: `uv run uvicorn bayesian_quiz:app` (see Procfile).
+
+#### Production: exe.dev
+The production deploy lives on a single [exe.dev](https://exe.dev) VM (`pydata-win`, fronted by exe.dev's HTTPS proxy at `pydata-win.exe.xyz`, with `pydata.win` aliased to it). The app runs as a `bayesian-quiz` systemd unit on port 8000.
+
+The quizmaster password is stored as a host-bound `systemd-creds`-encrypted file at `/etc/credstore.encrypted/quizmaster_pass`, loaded into the unit via `LoadCredentialEncrypted=` and surfaced to the app as `QUIZMASTER_PASS_FILE`. The plaintext is encrypted *on the VM* and never lands in exe.dev's stored setup script.
+
+All operations go through `just exe-*` recipes (see `Justfile` and `deploy/README.md`):
+
+| Goal | Command |
+| --- | --- |
+| First-time deploy | `QUIZMASTER_PASS=… just exe-deploy` |
+| Pull latest `master` and restart | `just exe-update` |
+| Upload a quiz file (no restart needed) | `just exe-quiz <slug>` |
+| Rotate the quizmaster password | `QUIZMASTER_PASS=… just exe-set-pass` |
+| Tail logs | `just exe-logs` |
+| Open a shell on the VM | `just exe-ssh` |
+
+Override the VM name with `EXE_VM=<name>` (default `pydata-win`). The Justfile derives the GitHub clone URL from `git remote get-url origin`, so a fork's `just exe-deploy` clones the fork.
+
+There is no git-push-to-deploy — code changes ship via `just exe-update`, which SSHes in and `git pull`s.
 
 ### Mobile Considerations
 - Large touch targets (44px minimum)
