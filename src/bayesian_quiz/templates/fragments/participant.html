@@ -47,7 +47,11 @@
     <p class="text-sm text-slate-500 mb-2">{{ participant.nickname }}</p>
     <span class="text-sm text-slate-500">Question {{ game.current_question_index + 1 }}</span>
     <h2 class="text-xl font-semibold mt-4">Get ready...</h2>
+    {% if game.current_question.intro %}
+    <p class="text-lg leading-relaxed mt-4 text-left">{{ game.current_question.intro | mini_markup }}</p>
+    {% else %}
     <p class="text-slate-500 mt-2">Look at the projector for some context</p>
+    {% endif %}
 </div>
 
 {% elif game.phase.value == "question_active" %}
