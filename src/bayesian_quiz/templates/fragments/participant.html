@@ -62,16 +62,10 @@
         <h2 class="text-xl font-semibold mt-2">{{ game.current_question.text | mini_markup }}</h2>
     </div>
 
+    {% set est = participant.estimates[game.current_question_index] if already_answered else none %}
     {% if already_answered %}
-    <div class="card border rounded-2xl p-6 text-center">
-        <div class="text-4xl mb-2">&#9989;</div>
-        <p class="font-semibold">Answer submitted!</p>
-        <p class="text-sm text-slate-500 mt-2">
-            &mu; = {{ "%.1f" | format(participant.estimates[game.current_question_index].mu) }},
-            &sigma; = {{ "%.1f" | format(participant.estimates[game.current_question_index].sigma) }}
-        </p>
-    </div>
-    {% else %}
+    <p class="text-center text-sm text-emerald-600 mb-3">&#9989; Submitted &mdash; you can still change it until the timer ends.</p>
+    {% endif %}
     <form id="estimate-form" hx-post="/api/estimate?{{ slug }}" hx-swap="innerHTML" hx-target="#main-content" class="card border rounded-2xl p-6 space-y-6">
         <div>
             <label class="block text-sm font-medium mb-2">Your estimate (&mu;)</label>
@@ -79,6 +73,7 @@
                 type="number"
                 name="mu"
                 step="any"
+                value="{{ "%g" | format(est.mu) if est else "" }}"
                 class="input-field w-full px-4 py-3 rounded-xl border text-lg font-mono"
                 placeholder="0"
                 required
@@ -93,6 +88,7 @@
                 inputmode="decimal"
                 step="any"
                 min="0.1"
+                value="{{ "%g" | format(est.sigma) if est else "" }}"
                 class="input-field w-full px-4 py-3 rounded-xl border text-lg font-mono"
                 placeholder="1"
                 required
@@ -104,9 +100,11 @@
             type="submit"
             class="w-full py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors"
         >
-            Submit Estimate
+            {{ "Update Estimate" if already_answered else "Submit Estimate" }}
         </button>
     </form>
+    {% if not already_answered %}
+    <p class="text-center text-xs text-slate-400 mt-3">You can change your answer until the timer ends.</p>
     {% endif %}
 </div>
 <script>
