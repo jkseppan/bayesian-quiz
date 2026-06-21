@@ -75,8 +75,18 @@
     </div>
 
     {% elif game.phase.value == "end" %}
-    <h2 class="text-lg font-semibold mb-2">Game Over</h2>
-    <p class="text-slate-300">The quiz has ended. Reset to start a new game.</p>
+    <h2 class="text-lg font-semibold mb-2">Game Over &mdash; Final Standings</h2>
+    {% set medals = {1: "\U0001f947", 2: "\U0001f948", 3: "\U0001f949"} %}
+    <div class="space-y-2 mb-4">
+        {% for participant in game.participants.values() | sort(attribute='total_score', reverse=True) %}
+        <div class="flex items-center gap-3">
+            <span class="w-6 text-center">{{ medals[loop.index] if loop.index in medals else loop.index ~ "." }}</span>
+            <span class="flex-1">{{ participant.nickname }}</span>
+            <span class="font-mono text-indigo-400">{{ "%.1f" | format(participant.total_score) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    <p class="text-slate-300">Reset to start a new game.</p>
 
     {% endif %}
 </div>

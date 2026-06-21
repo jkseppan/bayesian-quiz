@@ -451,6 +451,24 @@
 <!-- Game over -->
 <div class="flex-1 flex flex-col items-center justify-center p-8">
     <h2 class="text-5xl font-bold mb-8">Game Over!</h2>
+
+    {% set medals = {1: "\U0001f947", 2: "\U0001f948", 3: "\U0001f949"} %}
+    <div class="w-full max-w-2xl space-y-4 mb-8">
+        {% for participant in game.participants.values() | sort(attribute='total_score', reverse=True) %}
+        {% if loop.index <= 5 %}
+        <div class="flex items-center gap-4 p-4 bg-slate-100 rounded-xl">
+            {% if loop.index in medals %}
+            <span class="text-3xl w-12 text-center">{{ medals[loop.index] }}</span>
+            {% else %}
+            <span class="text-2xl font-bold text-slate-400 w-12">{{ loop.index }}</span>
+            {% endif %}
+            <span class="flex-1 text-xl font-semibold">{{ participant.nickname }}</span>
+            <span class="text-xl font-mono font-bold text-indigo-600">{{ "%.1f" | format(participant.total_score) }}</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
     <p class="text-2xl text-slate-600">Thanks for playing</p>
 </div>
 
