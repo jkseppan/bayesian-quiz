@@ -68,7 +68,7 @@
 
     {% set est = participant.estimates[game.current_question_index] if already_answered else none %}
     {% if already_answered %}
-    <p class="text-center text-sm text-emerald-600 mb-3">You can still change your answer until the timer ends.</p>
+    <p class="text-center text-sm text-emerald-600 mb-3">You can still change your answer; edits are auto-submitted when the timer ends.</p>
     {% endif %}
     <form id="estimate-form" hx-post="/api/estimate?{{ slug }}" hx-swap="innerHTML" hx-target="#main-content" class="card border rounded-2xl p-6 space-y-6">
         <div>
@@ -111,7 +111,7 @@
         </button>
     </form>
     {% if not already_answered %}
-    <p class="text-center text-xs text-slate-400 mt-3">You can change your answer until the timer ends.</p>
+    <p class="text-center text-xs text-slate-400 mt-3">You can change your answer until the timer ends, when your latest edits are auto-submitted.</p>
     {% endif %}
 </div>
 <script>
