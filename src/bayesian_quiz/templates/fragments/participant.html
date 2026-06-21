@@ -64,7 +64,7 @@
 
     {% set est = participant.estimates[game.current_question_index] if already_answered else none %}
     {% if already_answered %}
-    <p class="text-center text-sm text-emerald-600 mb-3">&#9989; Submitted &mdash; you can still change it until the timer ends.</p>
+    <p class="text-center text-sm text-emerald-600 mb-3">You can still change your answer until the timer ends.</p>
     {% endif %}
     <form id="estimate-form" hx-post="/api/estimate?{{ slug }}" hx-swap="innerHTML" hx-target="#main-content" class="card border rounded-2xl p-6 space-y-6">
         <div>
@@ -98,9 +98,12 @@
         <button
             id="submit-btn"
             type="submit"
-            class="w-full py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors"
+            hx-disabled-elt="this"
+            data-label="{{ "Update Estimate" if already_answered else "Submit Estimate" }}"
+            {% if already_answered %}disabled{% endif %}
+            class="w-full py-3 px-6 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-400 disabled:hover:bg-slate-400 text-white font-semibold rounded-xl transition-colors"
         >
-            {{ "Update Estimate" if already_answered else "Submit Estimate" }}
+            {{ "&#9989; Saved" | safe if already_answered else "Submit Estimate" }}
         </button>
     </form>
     {% if not already_answered %}
@@ -113,6 +116,16 @@
     if (!el) return;
     var deadline = parseFloat(el.dataset.deadline) * 1000;
     var btn = document.getElementById('submit-btn');
+    var form = document.getElementById('estimate-form');
+    if (form && btn) {
+        form.addEventListener('input', function() {
+            btn.disabled = false;
+            btn.textContent = btn.dataset.label;
+        });
+        form.addEventListener('htmx:beforeRequest', function() {
+            btn.textContent = 'Saving…';
+        });
+    }
     var expired = false;
     function tick() {
         var seconds = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
@@ -127,7 +140,7 @@
             if (form && muInput && muInput.value !== '') {
                 var sigmaInput = form.querySelector('input[name="sigma"]');
                 if (!sigmaInput.value) sigmaInput.value = '1';
-                form.requestSubmit();
+                htmx.ajax('POST', form.getAttribute('hx-post'), {source: form, target: '#main-content', swap: 'innerHTML'});
             } else if (btn) {
                 btn.disabled = true;
                 btn.textContent = 'Time\u2019s up';
