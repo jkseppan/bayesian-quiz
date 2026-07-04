@@ -68,9 +68,9 @@ LOBBY → INTRO → [QUESTION_INTRO →] QUESTION_ACTIVE → SHOW_DISTRIBUTION �
 ```
 
 1. **LOBBY**: QR code displayed, players join, quizmaster waits for enough players
-2. **INTRO**: 4 slides explaining CRPS scoring (skippable)
+2. **INTRO**: 5 slides explaining CRPS scoring (skippable)
 3. **QUESTION_INTRO** (optional): If the question has an `Intro` field, show context on projector before timer starts
-4. **QUESTION_ACTIVE**: Question displayed, 30-second countdown; players submit estimates; 1-second grace period after timer expires
+4. **QUESTION_ACTIVE**: Question displayed, 30-second countdown; players submit estimates; 3-second grace period after timer expires
 5. **SHOW_DISTRIBUTION**: Timer ended, show aggregate of all guesses (correct answer still hidden)
 6. **REVEAL_ANSWER**: Show correct answer, fun fact
 7. **QUESTION_SCORES**: Show per-question top scorers

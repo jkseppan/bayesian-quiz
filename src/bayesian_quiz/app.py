@@ -23,7 +23,7 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from .questions import list_quizzes
+from .questions import _SAFE_SLUG, list_quizzes
 from .state import (
     GRACE_PERIOD_SECONDS,
     QUESTION_DURATION_SECONDS,
@@ -136,10 +136,17 @@ if MOCKUPS_DIR.exists():
 
 
 def _get_slug(request: Request) -> str | None:
-    """Extract slug from query string: the first key with an empty value (?sample)."""
+    """Extract slug from query string: the first key with an empty value (?sample).
+
+    Normalized to lowercase and validated so that /play?Sample and /play?sample
+    map to the same game, and invalid slugs are rejected up front.
+    """
     for key, value in request.query_params.items():
         if value == "":
-            return key
+            slug = key.lower()
+            if _SAFE_SLUG.match(slug):
+                return slug
+            return None
     return None
 
 
@@ -169,8 +176,19 @@ def _sse_message(event: str, data: str) -> str:
     return f"event: {event}\ndata: {data}\n\n"
 
 
+_QUESTION_VISIBLE_PHASES = frozenset(
+    {
+        GamePhase.QUESTION_ACTIVE,
+        GamePhase.SHOW_DISTRIBUTION,
+        GamePhase.REVEAL_ANSWER,
+        GamePhase.QUESTION_SCORES,
+    }
+)
+
+
 def _serialize_state(game: GameManager) -> dict:
     state = game.state
+    question = state.current_question
     return {
         "phase": state.phase.value,
         "current_question_index": state.current_question_index,
@@ -180,10 +198,10 @@ def _serialize_state(game: GameManager) -> dict:
         "question_deadline": state.question_deadline,
         "question": (
             {
-                "text": state.current_question.text,
-                "unit": state.current_question.unit,
+                "text": question.text,
+                "unit": question.unit,
             }
-            if state.current_question
+            if question and state.phase in _QUESTION_VISIBLE_PHASES
             else None
         ),
     }
@@ -435,8 +453,23 @@ def _schedule_auto_advance(game: GameManager) -> None:
 
 
 @app.post("/api/advance", dependencies=[Depends(_require_quizmaster)])
-async def advance(request: Request):
+async def advance(
+    request: Request,
+    from_phase: Annotated[str | None, Form()] = None,
+    from_slide: Annotated[int | None, Form()] = None,
+):
     _slug, game = _get_game(request)
+    # Idempotency guard: a stale click (double-click, or a manual click racing
+    # the auto-advance) carries the phase/slide it was rendered for. If that no
+    # longer matches the live state, the advance already happened — no-op.
+    if from_phase is not None and from_phase != game.state.phase.value:
+        return {"phase": game.state.phase.value}
+    if (
+        from_slide is not None
+        and game.state.phase == GamePhase.INTRO
+        and from_slide != game.state.intro_slide
+    ):
+        return {"phase": game.state.phase.value}
     await game.advance_phase()
     if game.state.phase == GamePhase.QUESTION_ACTIVE:
         _schedule_auto_advance(game)

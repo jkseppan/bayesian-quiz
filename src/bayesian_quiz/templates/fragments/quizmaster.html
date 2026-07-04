@@ -96,6 +96,7 @@
 <button
     hx-post="/api/advance?{{ slug }}"
     hx-swap="none"
+    {% if game.phase.value == "intro" %}hx-vals='{"from_phase": "{{ game.phase.value }}", "from_slide": {{ game.intro_slide }}}'{% else %}hx-vals='{"from_phase": "{{ game.phase.value }}"}'{% endif %}
     class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-lg font-semibold transition-colors shrink-0"
 >
     {% if game.phase.value == "lobby" %}

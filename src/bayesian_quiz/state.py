@@ -1,6 +1,7 @@
 """Game state management for Bayesian Quiz."""
 
 import asyncio
+import math
 import re
 import time
 import unicodedata
@@ -197,6 +198,12 @@ class GameManager:
             elapsed = time.monotonic() - self.state.question_started_at
             if elapsed > QUESTION_DURATION_SECONDS + GRACE_PERIOD_SECONDS:
                 raise ValueError("Time expired")
+        if not math.isfinite(mu):
+            raise ValueError("Estimate must be a real number")
+        if not math.isfinite(sigma):
+            raise ValueError("Uncertainty must be a real number")
+        if sigma <= 0:
+            raise ValueError("Uncertainty must be greater than zero")
 
         estimate = Estimate(mu=mu, sigma=sigma)
         self.state.participants[participant_id].estimates[
