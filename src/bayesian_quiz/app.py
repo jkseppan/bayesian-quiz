@@ -5,6 +5,7 @@ import io
 import json
 import os
 import secrets
+import time
 from pathlib import Path
 from typing import Annotated
 from uuid import uuid4
@@ -95,6 +96,11 @@ def _mini_markup(text: str) -> markupsafe.Markup:
 
 
 templates.env.filters["mini_markup"] = _mini_markup
+
+# Exposes the server's wall-clock time to templates so countdown scripts can
+# correct for client clock skew (see data-server-now in the question_active
+# fragments).
+templates.env.globals["server_now"] = time.time
 
 STATIC_DIR = Path(__file__).parent / "static"
 

@@ -307,7 +307,7 @@
              hx-get="/fragments/estimate-count?{{ slug }}" hx-trigger="estimate_submitted from:#sse" hx-swap="innerHTML">
             <span class="font-mono text-2xl font-bold text-emerald-600">{{ game.get_current_estimates() | length }}</span> / {{ game.participants | length }} answered
         </div>
-        <div id="projector-countdown" class="text-6xl font-mono font-bold text-indigo-600" data-deadline="{{ game.question_deadline or 0 }}">
+        <div id="projector-countdown" class="text-6xl font-mono font-bold text-indigo-600" data-deadline="{{ game.question_deadline or 0 }}" data-server-now="{{ server_now() }}">
         </div>
     </div>
 </div>
@@ -315,9 +315,14 @@
 (function() {
     var el = document.getElementById('projector-countdown');
     if (!el) return;
-    var deadline = parseFloat(el.dataset.deadline) * 1000;
+    var deadline = parseFloat(el.dataset.deadline);
+    var serverNow = parseFloat(el.dataset.serverNow);
+    // Correct for client clock skew: measure remaining time against the server's
+    // clock at render, then tick against the local clock from here on.
+    var remainingAtRenderMs = (deadline - serverNow) * 1000;
+    var endLocal = Date.now() + remainingAtRenderMs;
     function tick() {
-        var seconds = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+        var seconds = Math.max(0, Math.ceil((endLocal - Date.now()) / 1000));
         el.textContent = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
         el.className = seconds <= 10
             ? 'text-6xl font-mono font-bold text-red-600'
