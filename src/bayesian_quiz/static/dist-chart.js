@@ -1,5 +1,84 @@
-function renderDistChart(svgId, estimates, unit, answer, drawAnswer) {
+// Pure function: compute a robust x-range for the estimates so a single wild
+// outlier can't stretch the axis. Returns {xMin, xMax} already 5%-padded.
+// `answer` is unioned into the range when it is a finite number (pass null to
+// keep the pure crowd view). No DOM access here so it is unit-testable.
+function computeRobustRange(estimates, answer) {
+    var n = estimates.length;
+    if (n === 0) return {xMin: -1, xMax: 1};
+
+    var los = [], his = [], mus = [];
+    for (var i = 0; i < n; i++) {
+        var mu = estimates[i].mu;
+        var sigma = estimates[i].sigma;
+        los.push(mu - 2.5 * sigma);
+        his.push(mu + 2.5 * sigma);
+        mus.push(mu);
+    }
+
+    function sortedNum(arr) {
+        return arr.slice().sort(function (a, b) { return a - b; });
+    }
+    // Simple sorted-index percentile (p in [0,1]).
+    function pct(sorted, p) {
+        var idx = Math.round(p * (sorted.length - 1));
+        if (idx < 0) idx = 0;
+        if (idx > sorted.length - 1) idx = sorted.length - 1;
+        return sorted[idx];
+    }
+    function median(arr) {
+        var s = sortedNum(arr);
+        var mid = Math.floor(s.length / 2);
+        return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+    }
+
+    var xMin, xMax;
+    if (n >= 8) {
+        // Trim lone outliers: 10th pct of lower bounds, 90th pct of upper bounds.
+        xMin = pct(sortedNum(los), 0.10);
+        xMax = pct(sortedNum(his), 0.90);
+    } else {
+        xMin = Math.min.apply(null, los);
+        xMax = Math.max.apply(null, his);
+    }
+
+    // Always widen the frame to include the median of the mu values.
+    var medMu = median(mus);
+    if (medMu < xMin) xMin = medMu;
+    if (medMu > xMax) xMax = medMu;
+
+    // Guard degenerate spans (e.g. all estimates identical / sigma == 0).
+    if (!(xMax > xMin)) {
+        var center = (xMin + xMax) / 2;
+        var maxSigma = 0;
+        for (var j = 0; j < n; j++) {
+            if (estimates[j].sigma > maxSigma) maxSigma = estimates[j].sigma;
+        }
+        var padAmt = maxSigma > 0 ? maxSigma : Math.max(1, Math.abs(center) * 0.05);
+        xMin = center - padAmt;
+        xMax = center + padAmt;
+    }
+
+    // Union the answer in (when it must be included) then re-pad below.
+    if (answer !== null && answer !== undefined && isFinite(answer)) {
+        if (answer < xMin) xMin = answer;
+        if (answer > xMax) xMax = answer;
+    }
+
+    // Keep the existing 5% padding behavior.
+    var xPad = (xMax - xMin) * 0.05;
+    xMin -= xPad;
+    xMax += xPad;
+
+    return {xMin: xMin, xMax: xMax};
+}
+
+// renderDistChart(svgId, estimates, unit, answer, drawAnswer, options)
+// options (optional): {xMin, xMax} explicit range override so the same renderer
+// can be driven frame-by-frame for the reveal zoom animation. When omitted the
+// robust range is derived from the estimates (and answer, when present).
+function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     if (drawAnswer === undefined) drawAnswer = true;
+    if (options === undefined) options = null;
     var svg = document.getElementById(svgId);
     if (!svg || estimates.length === 0) return;
 
@@ -13,20 +92,16 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer) {
         return Math.exp(-0.5 * z * z);
     }
 
-    var xMin = Infinity, xMax = -Infinity;
-    for (var i = 0; i < estimates.length; i++) {
-        var lo = estimates[i].mu - 3.5 * estimates[i].sigma;
-        var hi = estimates[i].mu + 3.5 * estimates[i].sigma;
-        if (lo < xMin) xMin = lo;
-        if (hi > xMax) xMax = hi;
+    var xMin, xMax;
+    if (options && options.xMin !== undefined && options.xMax !== undefined) {
+        // Explicit (already-padded) range override for frame-by-frame drawing.
+        xMin = options.xMin;
+        xMax = options.xMax;
+    } else {
+        var robust = computeRobustRange(estimates, answer);
+        xMin = robust.xMin;
+        xMax = robust.xMax;
     }
-    if (answer !== null) {
-        if (answer < xMin) xMin = answer - (xMax - answer) * 0.1;
-        if (answer > xMax) xMax = answer + (answer - xMin) * 0.1;
-    }
-    var xPad = (xMax - xMin) * 0.05;
-    xMin -= xPad;
-    xMax += xPad;
 
     var N = 200;
     var xs = [];
@@ -175,4 +250,9 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer) {
         ansLabel.textContent = (answer % 1 === 0 ? answer.toLocaleString() : answer.toFixed(1)) + (unit ? " " + unit : "");
         svg.appendChild(ansLabel);
     }
+}
+
+// Node/CommonJS export for unit testing (no-op in the browser).
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = { renderDistChart: renderDistChart, computeRobustRange: computeRobustRange };
 }

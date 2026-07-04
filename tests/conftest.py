@@ -1,6 +1,8 @@
 import os
 
-os.environ.setdefault("QUIZMASTER_PASS", "test-password")
+# Force, don't setdefault: a QUIZMASTER_PASS exported in the developer's shell
+# would otherwise be baked into the app at import time and break auth in tests.
+os.environ["QUIZMASTER_PASS"] = "test-password"
 
 import pytest
 

@@ -343,7 +343,13 @@
         var estimates = [{% for e in estimates %}{"mu":{{ e.mu | tojson }},"sigma":{{ e.sigma | tojson }}}{% if not loop.last %},{% endif %}{% endfor %}];
         var unit = {{ game.current_question.unit | tojson }};
         var answer = {{ game.current_question.answer | tojson }};
-        renderDistChart("dist-chart", estimates, unit, answer, false);
+        var questionIndex = {{ game.current_question_index | tojson }};
+        // Cancel any leftover reveal-zoom loop from a prior fragment swap.
+        if (window.__distZoomRaf) { cancelAnimationFrame(window.__distZoomRaf); window.__distZoomRaf = null; }
+        // Robust crowd view (answer hidden here, so it is not unioned into range).
+        var r = computeRobustRange(estimates, null);
+        window.__distStash = {questionIndex: questionIndex, xMin: r.xMin, xMax: r.xMax};
+        renderDistChart("dist-chart", estimates, unit, answer, false, {xMin: r.xMin, xMax: r.xMax});
     })();
     </script>
     {% else %}
@@ -373,7 +379,51 @@
         var estimates = [{% for e in estimates %}{"mu":{{ e.mu | tojson }},"sigma":{{ e.sigma | tojson }}}{% if not loop.last %},{% endif %}{% endfor %}];
         var unit = {{ game.current_question.unit | tojson }};
         var answer = {{ game.current_question.answer | tojson }};
-        renderDistChart("reveal-chart", estimates, unit, answer);
+        var questionIndex = {{ game.current_question_index | tojson }};
+
+        // Cancel any previous zoom loop if this script re-runs on a fresh swap.
+        if (window.__distZoomRaf) { cancelAnimationFrame(window.__distZoomRaf); window.__distZoomRaf = null; }
+
+        // Final frame: robust crowd range unioned with the answer (padded).
+        var fin = computeRobustRange(estimates, answer);
+
+        // Start frame: the stashed show_distribution range when it matches this
+        // question; otherwise expand the final range ~1.6x so a reload still
+        // gets a gentle zoom rather than a static jump.
+        var stash = window.__distStash;
+        var start;
+        if (stash && stash.questionIndex === questionIndex &&
+            typeof stash.xMin === "number" && typeof stash.xMax === "number") {
+            start = {xMin: stash.xMin, xMax: stash.xMax};
+        } else {
+            var c = (fin.xMin + fin.xMax) / 2;
+            var half = (fin.xMax - fin.xMin) / 2 * 1.6;
+            start = {xMin: c - half, xMax: c + half};
+        }
+        // Union start with final so the animation only ever tightens.
+        var s0 = Math.min(start.xMin, fin.xMin);
+        var s1 = Math.max(start.xMax, fin.xMax);
+        var f0 = fin.xMin, f1 = fin.xMax;
+
+        function easeInOut(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+
+        // Answer line stays visible throughout (drawAnswer=true) as the zoom target.
+        renderDistChart("reveal-chart", estimates, unit, answer, true, {xMin: s0, xMax: s1});
+
+        var duration = 2500, delay = 400, t0 = null;
+        function frame(now) {
+            if (t0 === null) t0 = now;
+            var elapsed = now - t0 - delay;  // wait out the view-transition cross-fade first
+            if (elapsed < 0) { window.__distZoomRaf = requestAnimationFrame(frame); return; }
+            var t = Math.min(1, elapsed / duration);
+            var e = easeInOut(t);
+            var xMin = s0 + (f0 - s0) * e;
+            var xMax = s1 + (f1 - s1) * e;
+            renderDistChart("reveal-chart", estimates, unit, answer, true, {xMin: xMin, xMax: xMax});
+            if (t < 1) { window.__distZoomRaf = requestAnimationFrame(frame); }
+            else { window.__distZoomRaf = null; }
+        }
+        window.__distZoomRaf = requestAnimationFrame(frame);
     })();
     </script>
     {% endif %}
