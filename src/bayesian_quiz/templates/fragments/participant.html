@@ -29,7 +29,7 @@
     </form>
 </div>
 
-{% elif game.phase.value in ("lobby", "intro") %}
+{% elif game.phase.value == "lobby" %}
 <!-- Waiting in lobby -->
 <div class="text-center mt-16">
     <div class="text-6xl mb-4">&#128075;</div>
@@ -41,6 +41,162 @@
     </div>
 </div>
 
+{% elif game.phase.value == "intro" %}
+<!-- Intro slides, mirrored for phones -->
+<div class="mt-4">
+    <div class="flex items-center justify-between mb-4">
+        <p class="text-xs uppercase tracking-widest text-indigo-500 font-medium">How this quiz works</p>
+        <p class="text-xs font-mono text-slate-400">{{ game.intro_slide + 1 }}/{{ game.intro_slide_count }}</p>
+    </div>
+
+{% if game.intro_slide == 0 %}
+    <h2 class="text-2xl font-bold mb-4">Give your answer as a distribution</h2>
+    <div class="space-y-3">
+        <div class="card border rounded-xl p-4 flex items-start gap-3">
+            <span class="text-3xl text-indigo-500 font-mono leading-none">&#956;</span>
+            <div>
+                <p class="font-semibold">Mean</p>
+                <p class="text-sm text-slate-500">Your best estimate of the true value</p>
+            </div>
+        </div>
+        <div class="card border rounded-xl p-4 flex items-start gap-3">
+            <span class="text-3xl text-purple-500 font-mono leading-none">&#963;</span>
+            <div>
+                <p class="font-semibold">Std. deviation</p>
+                <p class="text-sm text-slate-500">How confident you are — smaller &sigma; means more confident</p>
+            </div>
+        </div>
+        <div class="card border rounded-xl p-4 flex items-start gap-3">
+            <span class="text-3xl leading-none">&#127919;</span>
+            <div>
+                <p class="font-semibold">Calibration wins</p>
+                <p class="text-sm text-slate-500">Right <em>and</em> confident scores highest. Wrong <em>and</em> confident is penalised.</p>
+            </div>
+        </div>
+    </div>
+
+{% elif game.intro_slide == 1 %}
+    <h2 class="text-xl font-bold mb-1">What is the Ultimate Answer to Life, The Universe, and Everything?</h2>
+    <p class="text-sm text-slate-500 mb-4 font-mono">answer = 42</p>
+    <div class="space-y-3">
+        <div class="card border rounded-xl p-4 flex items-center gap-3">
+            <div class="flex-1">
+                <p class="font-semibold text-emerald-600">Confident &amp; Correct</p>
+                <p class="font-mono text-sm text-slate-500">&mu;=42, &sigma;=1</p>
+            </div>
+            <p class="font-mono text-2xl font-bold text-emerald-600">98 pts</p>
+        </div>
+        <div class="card border rounded-xl p-4 flex items-center gap-3">
+            <div class="flex-1">
+                <p class="font-semibold text-amber-600">Uncertain &amp; Correct</p>
+                <p class="font-mono text-sm text-slate-500">&mu;=42, &sigma;=20</p>
+            </div>
+            <p class="font-mono text-2xl font-bold text-amber-600">63 pts</p>
+        </div>
+        <div class="card border rounded-xl p-4 flex items-center gap-3">
+            <div class="flex-1">
+                <p class="font-semibold text-red-600">Confident &amp; Wrong</p>
+                <p class="font-mono text-sm text-slate-500">&mu;=30, &sigma;=1</p>
+            </div>
+            <p class="font-mono text-2xl font-bold text-red-600">32 pts</p>
+        </div>
+    </div>
+
+{% elif game.intro_slide == 2 %}
+    <h2 class="text-2xl font-bold mb-1">Continuous Ranked Probability Score</h2>
+    <p class="text-sm text-indigo-500 mb-4">Lower CRPS = better prediction.</p>
+    <div class="card border rounded-xl p-4">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-slate-300 dark:border-slate-600">
+                    <th class="py-2 pr-2 text-xs text-slate-500 font-medium">Answer = 42</th>
+                    <th class="py-2 px-2 text-center">
+                        <span class="text-indigo-500 font-semibold text-sm">Confident</span>
+                        <span class="block font-mono text-slate-400 text-xs font-normal">&sigma; = 1</span>
+                    </th>
+                    <th class="py-2 pl-2 text-center">
+                        <span class="text-purple-500 font-semibold text-sm">Uncertain</span>
+                        <span class="block font-mono text-slate-400 text-xs font-normal">&sigma; = 20</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b border-slate-200 dark:border-slate-700">
+                    <td class="py-3 pr-2">
+                        <span class="text-sm font-semibold">Accurate</span>
+                        <span class="block font-mono text-xs text-slate-400">&mu; = 42</span>
+                    </td>
+                    <td class="py-3 px-2 text-center font-mono text-lg font-bold text-emerald-600">0.23</td>
+                    <td class="py-3 pl-2 text-center font-mono text-lg text-slate-500">4.67</td>
+                </tr>
+                <tr class="border-b border-slate-200 dark:border-slate-700">
+                    <td class="py-3 pr-2">
+                        <span class="text-sm font-semibold">Pretty good</span>
+                        <span class="block font-mono text-xs text-slate-400">&mu; = 40</span>
+                    </td>
+                    <td class="py-3 px-2 text-center font-mono text-lg">1.46</td>
+                    <td class="py-3 pl-2 text-center font-mono text-lg text-slate-500">4.75</td>
+                </tr>
+                <tr>
+                    <td class="py-3 pr-2">
+                        <span class="text-sm font-semibold">Inaccurate</span>
+                        <span class="block font-mono text-xs text-slate-400">&mu; = 30</span>
+                    </td>
+                    <td class="py-3 px-2 text-center font-mono text-lg font-bold text-red-600">11.44</td>
+                    <td class="py-3 pl-2 text-center font-mono text-lg text-slate-500">7.46</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="text-sm text-slate-500 mt-3 text-center">Overconfidence when wrong is punished harder than honest uncertainty</p>
+
+{% elif game.intro_slide == 3 %}
+    <h2 class="text-2xl font-bold mb-4">Points range from 0 to 100. Higher is better.</h2>
+    <div class="card border rounded-xl p-6 text-center">
+        <p class="font-mono text-indigo-500 text-sm mb-2">points =</p>
+        <p class="font-mono font-bold text-3xl text-indigo-600 leading-none">
+            100 &middot; e<sup class="text-lg">&minus;CRPS / scale</sup>
+        </p>
+        <p class="text-sm text-slate-500 mt-3">where <em>scale</em> is set per question</p>
+    </div>
+    <div class="space-y-3 mt-4">
+        <div class="card border rounded-xl p-4 flex items-center gap-4">
+            <p class="font-mono text-2xl font-bold text-emerald-600 w-16">100</p>
+            <p class="text-sm text-slate-500">Perfect prediction (CRPS &rarr; 0)</p>
+        </div>
+        <div class="card border rounded-xl p-4 flex items-center gap-4">
+            <p class="font-mono text-2xl font-bold text-indigo-600 w-16">37</p>
+            <p class="text-sm text-slate-500">Off by one scale unit</p>
+        </div>
+        <div class="card border rounded-xl p-4 flex items-center gap-4">
+            <p class="font-mono text-2xl font-bold text-slate-400 w-16">0</p>
+            <p class="text-sm text-slate-500">Wildly wrong (CRPS &rarr; &infin;)</p>
+        </div>
+    </div>
+
+{% elif game.intro_slide == 4 %}
+    <h2 class="text-2xl font-bold mb-4">How to play</h2>
+    <div class="space-y-3">
+        <div class="card border rounded-xl p-4 flex items-start gap-3">
+            <span class="text-2xl font-mono text-indigo-500 shrink-0">&#956;&#963;</span>
+            <p class="text-sm">Input a <strong>mean</strong> (your guess) and a <strong>standard deviation</strong> (how sure you are)</p>
+        </div>
+        <div class="card border rounded-xl p-4 flex items-start gap-3">
+            <span class="text-2xl shrink-0">&#9201;</span>
+            <p class="text-sm">You have <strong>30 seconds</strong> to answer</p>
+        </div>
+        <div class="card border rounded-xl p-4 flex items-start gap-3">
+            <span class="text-2xl shrink-0">&#128504;</span>
+            <p class="text-sm">Speed isn't scored — as long as you're under the 30-second limit</p>
+        </div>
+        <div class="card border rounded-xl p-4 flex items-start gap-3">
+            <span class="text-2xl shrink-0">&#129302;</span>
+            <p class="text-sm">Please don't use AI assistants</p>
+        </div>
+    </div>
+{% endif %}
+</div>
+
 {% elif game.phase.value == "question_intro" %}
 <!-- Question intro -->
 <div class="text-center mt-8">
@@ -49,8 +205,6 @@
     <h2 class="text-xl font-semibold mt-4">Get ready...</h2>
     {% if game.current_question.intro %}
     <p class="text-lg leading-relaxed mt-4 text-left">{{ game.current_question.intro | mini_markup }}</p>
-    {% else %}
-    <p class="text-slate-500 mt-2">Look at the projector for some context</p>
     {% endif %}
 </div>
 
@@ -182,12 +336,36 @@
 </script>
 
 {% elif game.phase.value == "show_distribution" %}
-<!-- Waiting for reveal -->
-<div class="text-center mt-16">
-    <p class="text-sm text-slate-500 mb-4">{{ participant.nickname }}</p>
-    <div class="text-6xl mb-4">&#129300;</div>
-    <h2 class="text-xl font-semibold mb-2">Time's up!</h2>
-    <p class="text-slate-500">Look at the projector to see how everyone answered...</p>
+<!-- Aggregate distribution, correct answer still hidden -->
+{% set estimates = game.get_current_estimates() %}
+{% set own = participant.estimates[game.current_question_index] if game.current_question_index in participant.estimates else none %}
+<div class="text-center mt-8">
+    <p class="text-sm text-slate-500 mb-2">{{ participant.nickname }}</p>
+    <h2 class="text-xl font-semibold mb-1">Time's up!</h2>
+    <p class="text-sm text-slate-500 mb-4">How everyone answered</p>
+
+    {% if estimates %}
+    <div class="rounded-2xl border border-slate-200 bg-white p-2 mb-3">
+        <svg id="participant-dist-chart" class="w-full h-auto" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <script>
+    (function() {
+        var estimates = [{% for e in estimates %}{"mu":{{ e.mu | tojson }},"sigma":{{ e.sigma | tojson }}}{% if not loop.last %},{% endif %}{% endfor %}];
+        var unit = {{ game.current_question.unit | tojson }};
+        var own = {% if own %}{"mu":{{ own.mu | tojson }},"sigma":{{ own.sigma | tojson }}}{% else %}null{% endif %};
+        // answer deliberately omitted — it must not reach phones before the reveal
+        renderDistChart("participant-dist-chart", estimates, unit, null, false, {fontScale: 1.8, own: own});
+    })();
+    </script>
+    {% else %}
+    <div class="card border rounded-2xl p-6 mb-3">
+        <p class="text-slate-400">No estimates received</p>
+    </div>
+    {% endif %}
+
+    <p class="text-sm text-slate-500">
+        <span class="font-mono font-semibold">{{ estimates | length }}</span> estimates received
+    </p>
 </div>
 
 {% elif game.phase.value == "reveal_answer" %}
@@ -217,6 +395,29 @@
         {% endif %}
     </div>
     {% endif %}
+
+    {% set estimates = game.get_current_estimates() %}
+    {% set own = participant.estimates[game.current_question_index] if game.current_question_index in participant.estimates else none %}
+    {% if estimates %}
+    <div class="rounded-2xl border border-slate-200 bg-white p-2 mb-4">
+        <svg id="participant-reveal-chart" class="w-full h-auto" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <script>
+    (function() {
+        var estimates = [{% for e in estimates %}{"mu":{{ e.mu | tojson }},"sigma":{{ e.sigma | tojson }}}{% if not loop.last %},{% endif %}{% endfor %}];
+        var unit = {{ game.current_question.unit | tojson }};
+        var answer = {{ game.current_question.answer | tojson }};
+        var own = {% if own %}{"mu":{{ own.mu | tojson }},"sigma":{{ own.sigma | tojson }}}{% else %}null{% endif %};
+        renderDistChart("participant-reveal-chart", estimates, unit, answer, true, {fontScale: 1.8, own: own});
+    })();
+    </script>
+    {% endif %}
+
+    {% if game.current_question.fun_fact %}
+    <p class="text-sm text-slate-500 text-left leading-relaxed">
+        {{ game.current_question.fun_fact | mini_markup }}
+    </p>
+    {% endif %}
 </div>
 
 {% elif game.phase.value == "question_scores" %}
@@ -230,6 +431,19 @@
     {% for r in results %}
         {% if r.participant_id == participant.id %}{% set ns.rank = loop.index %}{% endif %}
     {% endfor %}
+
+    {% if results %}
+    <div class="space-y-2 mb-6 text-left">
+        {% for r in results[:5] %}
+        <div class="card border rounded-xl px-4 py-2 flex items-center gap-3 {% if r.participant_id == participant.id %}ring-2 ring-indigo-500{% endif %}">
+            <span class="text-lg font-bold text-slate-400 w-6 text-center shrink-0">{{ loop.index }}</span>
+            <span class="flex-1 font-semibold truncate">{{ r.nickname }}</span>
+            <span class="font-mono text-xs text-slate-500 shrink-0">{{ "%.1f" | format(r.mu) }} &plusmn; {{ "%.1f" | format(r.sigma) }}</span>
+            <span class="font-mono font-bold text-indigo-600 w-14 text-right shrink-0">{{ "%.1f" | format(r.points) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     {% if ns.rank is not none %}
     <div class="card border rounded-2xl p-6">
@@ -273,6 +487,23 @@
     <div class="text-6xl mb-4">&#127881;</div>
     <h2 class="text-2xl font-bold mb-2">Game Over!</h2>
     <p class="text-slate-500">Thanks for playing, {{ participant.nickname }}!</p>
+
+    {% set medals = {1: "\U0001f947", 2: "\U0001f948", 3: "\U0001f949"} %}
+    <div class="space-y-2 mt-8 text-left">
+        {% for p in sorted_ps %}
+        {% if loop.index <= 5 %}
+        <div class="card border rounded-xl px-4 py-2 flex items-center gap-3 {% if p.id == participant.id %}ring-2 ring-indigo-500{% endif %}">
+            {% if loop.index in medals %}
+            <span class="text-xl w-6 text-center shrink-0">{{ medals[loop.index] }}</span>
+            {% else %}
+            <span class="text-lg font-bold text-slate-400 w-6 text-center shrink-0">{{ loop.index }}</span>
+            {% endif %}
+            <span class="flex-1 font-semibold truncate">{{ p.nickname }}</span>
+            <span class="font-mono font-bold text-indigo-600">{{ "%.1f" | format(p.total_score) }}</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
 
     <div class="card border rounded-2xl p-6 mt-8">
         <p class="text-sm text-slate-500 mb-2">Your final score</p>

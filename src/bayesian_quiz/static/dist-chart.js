@@ -73,12 +73,18 @@ function computeRobustRange(estimates, answer) {
 }
 
 // renderDistChart(svgId, estimates, unit, answer, drawAnswer, options)
-// options (optional): {xMin, xMax} explicit range override so the same renderer
-// can be driven frame-by-frame for the reveal zoom animation. When omitted the
-// robust range is derived from the estimates (and answer, when present).
+// options (all optional):
+//   xMin, xMax: explicit (already-padded) range override so the same renderer
+//     can be driven frame-by-frame for the reveal zoom animation. When omitted
+//     the robust range is derived from the estimates (and answer, when present).
+//   fontScale: multiplier for axis tick / unit label sizes (small screens)
+//   own: {mu, sigma} — highlight one estimate as "you"
 function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     if (drawAnswer === undefined) drawAnswer = true;
-    if (options === undefined) options = null;
+    if (answer === undefined) answer = null;
+    options = options || {};
+    var fontScale = options.fontScale || 1;
+    var own = options.own || null;
     var svg = document.getElementById(svgId);
     if (!svg || estimates.length === 0) return;
 
@@ -173,6 +179,33 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     line.setAttribute("stroke-width", "3");
     svg.appendChild(line);
 
+    if (own && isFinite(own.mu) && isFinite(own.sigma)) {
+        var ownSigma = Math.max(own.sigma, minDisplaySigma);
+        var ownYs = [];
+        for (var i = 0; i < N; i++) ownYs.push(bell(xs[i], own.mu, ownSigma));
+        var ownPath = document.createElementNS(ns, "path");
+        ownPath.setAttribute("d", buildPath(ownYs));
+        ownPath.setAttribute("fill", "none");
+        ownPath.setAttribute("stroke", "#7c3aed");
+        ownPath.setAttribute("stroke-width", "3");
+        ownPath.setAttribute("stroke-dasharray", "6,4");
+        svg.appendChild(ownPath);
+
+        var ownX = sx(own.mu);
+        if (ownX >= pad.left && ownX <= W - pad.right) {
+            var ownLabel = document.createElementNS(ns, "text");
+            ownLabel.setAttribute("x", ownX);
+            ownLabel.setAttribute("y", sy(1) - 8);
+            ownLabel.setAttribute("text-anchor", "middle");
+            ownLabel.setAttribute("fill", "#7c3aed");
+            ownLabel.setAttribute("font-size", "22");
+            ownLabel.setAttribute("font-weight", "600");
+            ownLabel.setAttribute("font-family", "'Space Grotesk', sans-serif");
+            ownLabel.textContent = "you";
+            svg.appendChild(ownLabel);
+        }
+    }
+
     var axis = document.createElementNS(ns, "line");
     axis.setAttribute("x1", pad.left);
     axis.setAttribute("y1", sy(0));
@@ -208,7 +241,7 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
         label.setAttribute("y", sy(0) + 24);
         label.setAttribute("text-anchor", "middle");
         label.setAttribute("fill", "#64748b");
-        label.setAttribute("font-size", "13");
+        label.setAttribute("font-size", 13 * fontScale);
         label.setAttribute("font-family", "'JetBrains Mono', monospace");
         label.textContent = tv % 1 === 0 ? tv.toLocaleString() : tv.toFixed(1);
         svg.appendChild(label);
@@ -220,7 +253,7 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
         unitLabel.setAttribute("y", sy(0) + 44);
         unitLabel.setAttribute("text-anchor", "end");
         unitLabel.setAttribute("fill", "#94a3b8");
-        unitLabel.setAttribute("font-size", "13");
+        unitLabel.setAttribute("font-size", 13 * fontScale);
         unitLabel.setAttribute("font-family", "'Space Grotesk', sans-serif");
         unitLabel.textContent = unit;
         svg.appendChild(unitLabel);
