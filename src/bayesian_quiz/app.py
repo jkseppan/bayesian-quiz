@@ -83,15 +83,19 @@ def _fmt_number(value: float) -> str:
 templates.env.filters["fmt_number"] = _fmt_number
 
 
+_MARKS = {"*": "\x01", "+": "\x02", "`": "\x03"}
+
+
 def _mini_markup(text: str) -> markupsafe.Markup:
     import re
-    PLACEHOLDER = "\x00"
     escaped = str(markupsafe.escape(text))
-    escaped = escaped.replace("\\*", PLACEHOLDER)
+    escaped = re.sub(r"\\([*+`])", lambda m: _MARKS[m.group(1)], escaped)
     result = re.sub(r"`([^`]+)`", r"<code>\1</code>", escaped)
+    result = re.sub(r"\+([^+]+)\+", r"<strong>\1</strong>", result)
     result = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", result)
     result = result.replace("&lt;br&gt;", "<br>")
-    result = result.replace(PLACEHOLDER, "*")
+    for char, placeholder in _MARKS.items():
+        result = result.replace(placeholder, char)
     return markupsafe.Markup(result)
 
 
