@@ -165,7 +165,20 @@
 <!-- Intro slide 2: CRPS score table -->
 <div class="flex-1 flex flex-col items-center justify-center p-12 bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900">
     <h2 class="text-4xl font-bold mb-2 text-center">Continuous Ranked Probability Score</h2>
-    <p class="text-indigo-600 text-xl mb-10 text-center">Lower CRPS = better prediction.</p>
+    <p class="text-indigo-600 text-xl mb-6 text-center">Lower CRPS = better prediction.</p>
+
+    <div class="bg-white rounded-2xl shadow-md border border-indigo-100 px-12 py-6 mb-8 text-center">
+        <math display="block" class="text-slate-800" style="font-size: 2.25rem">
+            <mi>CRPS</mi><mo stretchy="false">(</mo><mi>F</mi><mo>,</mo><mi>y</mi><mo stretchy="false">)</mo><mo>=</mo>
+            <msubsup><mo>&#8747;</mo><mrow><mo>&#8722;</mo><mi>&#8734;</mi></mrow><mi>&#8734;</mi></msubsup>
+            <msup>
+                <mrow><mo>(</mo><mi>F</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>&#8722;</mo><mi>&#120793;</mi><mo>[</mo><mi>x</mi><mo>&#8805;</mo><mi>y</mi><mo>]</mo><mo>)</mo></mrow>
+                <mn>2</mn>
+            </msup>
+            <mo>&#8202;</mo><mi>d</mi><mi>x</mi>
+        </math>
+        <p class="text-slate-500 mt-4 text-lg">F = your Gaussian CDF, y = the true answer</p>
+    </div>
 
     <div class="w-full max-w-4xl bg-white rounded-2xl shadow-md border border-indigo-100 px-8 py-4">
         <table class="w-full text-left border-collapse">

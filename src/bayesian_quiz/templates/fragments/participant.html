@@ -104,7 +104,19 @@
 
 {% elif game.intro_slide == 2 %}
     <h2 class="text-2xl font-bold mb-1">Continuous Ranked Probability Score</h2>
-    <p class="text-sm text-indigo-500 mb-4">Lower CRPS = better prediction.</p>
+    <p class="text-sm text-indigo-500 mb-3">Lower CRPS = better prediction.</p>
+    <div class="card border rounded-xl p-4 mb-3 text-center">
+        <math display="block" style="font-size: 1.05rem">
+            <mi>CRPS</mi><mo stretchy="false">(</mo><mi>F</mi><mo>,</mo><mi>y</mi><mo stretchy="false">)</mo><mo>=</mo>
+            <msubsup><mo>&#8747;</mo><mrow><mo>&#8722;</mo><mi>&#8734;</mi></mrow><mi>&#8734;</mi></msubsup>
+            <msup>
+                <mrow><mo>(</mo><mi>F</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>&#8722;</mo><mi>&#120793;</mi><mo>[</mo><mi>x</mi><mo>&#8805;</mo><mi>y</mi><mo>]</mo><mo>)</mo></mrow>
+                <mn>2</mn>
+            </msup>
+            <mo>&#8202;</mo><mi>d</mi><mi>x</mi>
+        </math>
+        <p class="text-xs text-slate-500 mt-2">F = your Gaussian CDF, y = the true answer</p>
+    </div>
     <div class="card border rounded-xl p-4">
         <table class="w-full text-left border-collapse">
             <thead>
