@@ -69,7 +69,7 @@ class TestIntroSlides:
         assert "Mean" in html
         assert "Std. deviation" in html
         assert "&#956;" in html or "μ" in html
-        assert "&#963;" in html or "σ" in html
+        assert "&#963;" in html or "σ" in html  # noqa: RUF001
 
     @pytest.mark.anyio
     async def test_advancing_slide_changes_content(self, client: TestClient):
