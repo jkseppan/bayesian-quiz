@@ -25,7 +25,7 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "anyio[trio]>=4.12.0",
-    "httpx>=0.28.1",
+    "httpx2",
     "pytest>=9.0.2",
     "pytest-playwright>=0.7.2",
     "ruff>=0.15.2",
@@ -57,3 +57,8 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/test_xss.py" = ["E501"]    # XSS payload strings cannot be shortened
 "simulate_players.py" = ["RUF001", "E501"]  # Greek letters and long payloads are intentional
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:The anyio.abc.BlockingPortal alias:DeprecationWarning:starlette.testclient",
+]

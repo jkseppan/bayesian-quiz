@@ -6,6 +6,7 @@ import json
 import os
 import secrets
 import time
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated
 from uuid import uuid4
@@ -34,7 +35,15 @@ from .state import (
     get_or_create_game,
 )
 
-app = FastAPI(title="Bayesian Quiz")
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    yield
+    for gm in games.values():
+        await gm.shutdown()
+
+
+app = FastAPI(title="Bayesian Quiz", lifespan=_lifespan)
 
 _basic = HTTPBasic()
 QUIZMASTER_USER = os.environ.get("QUIZMASTER_USER", "quizmaster")
@@ -62,12 +71,6 @@ def _require_quizmaster(credentials: Annotated[HTTPBasicCredentials, Depends(_ba
             detail="Invalid credentials",
             headers={"WWW-Authenticate": "Basic"},
         )
-
-
-@app.on_event("shutdown")
-async def _shutdown():
-    for gm in games.values():
-        await gm.shutdown()
 
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"

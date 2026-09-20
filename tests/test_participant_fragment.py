@@ -51,7 +51,9 @@ def _register(client: TestClient, nickname: str) -> str:
 
 
 def _fragment(client: TestClient, pid: str) -> str:
-    resp = client.get(f"/fragments/participant?{SLUG}", cookies={"participant_id": pid})
+    client.cookies.clear()
+    client.cookies.set("participant_id", pid)
+    resp = client.get(f"/fragments/participant?{SLUG}")
     assert resp.status_code == 200
     return resp.text
 
