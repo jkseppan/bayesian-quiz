@@ -15,7 +15,7 @@
 </div>
 
 <!-- Current state info -->
-<div class="bg-slate-800 rounded-xl p-6 mb-4 min-h-0 overflow-y-auto flex-1">
+<div class="bg-slate-800 rounded-xl p-6 mb-4 min-h-40 overflow-y-auto flex-1">
     {% if game.phase.value == "lobby" %}
     <h2 class="text-lg font-semibold mb-2">Waiting for players</h2>
     <p class="text-slate-300 font-mono text-2xl">{{ game.participants | length }} joined</p>
