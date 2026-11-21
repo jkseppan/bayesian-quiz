@@ -63,7 +63,8 @@ function computeRobustRange(estimates, answer) {
     // quantity (years, GWh, counts...).
     var minMu = Math.min.apply(null, mus);
     var answerNonNeg = answer === null || answer === undefined || answer >= 0;
-    if (minMu >= 0 && answerNonNeg && xMin < 0) xMin = 0;
+    var nonNegAxis = minMu >= 0 && answerNonNeg;
+    if (nonNegAxis && xMin < 0) xMin = 0;
 
     // Union the answer in (when it must be included) then re-pad below.
     if (answer !== null && answer !== undefined && isFinite(answer)) {
@@ -71,13 +72,12 @@ function computeRobustRange(estimates, answer) {
         if (answer > xMax) xMax = answer;
     }
 
-    // Keep the existing 5% padding behavior (but never pad a clamped-at-zero
-    // axis back below zero).
-    var clampedZero = xMin === 0;
+    // Keep the existing 5% padding behavior (but never pad an all-positive
+    // axis below zero, even when the pre-pad bound was slightly above it).
     var xPad = (xMax - xMin) * 0.05;
     xMin -= xPad;
     xMax += xPad;
-    if (clampedZero && xMin < 0) xMin = 0;
+    if (nonNegAxis && xMin < 0) xMin = 0;
 
     return {xMin: xMin, xMax: xMax};
 }
@@ -96,36 +96,52 @@ function niceTickStep(range, maxTicks) {
     return 10 * mag;
 }
 
+// Fewest decimals that represent x exactly (within fp noise), capped at 8.
+function decimalsFor(x) {
+    for (var d = 0; d <= 8; d++) {
+        var scaled = x * Math.pow(10, d);
+        if (Math.abs(scaled - Math.round(scaled)) < 1e-6 * Math.max(1, Math.abs(scaled))) return d;
+    }
+    return 8;
+}
+
+// One suffix for the whole axis, chosen from its largest magnitude, so ticks
+// never mix "7,500" with "10k" or "750k" with "1.0M".
+function axisSuffix(step, axisMax) {
+    if (step >= 1000 && axisMax >= 10000) {
+        if (axisMax >= 1e9) return {divisor: 1e9, suffix: "B"};
+        if (axisMax >= 1e6) return {divisor: 1e6, suffix: "M"};
+        return {divisor: 1e3, suffix: "k"};
+    }
+    return {divisor: 1, suffix: ""};
+}
+
 // Format a tick value given the tick step: enough decimals to distinguish
-// neighbouring ticks, compact SI suffixes for large magnitudes, and no "-0".
-function formatTick(value, step) {
+// neighbouring ticks (a 2.5-step axis gets one decimal), compact SI suffixes
+// for large magnitudes, and no "-0". axisMax picks the shared suffix.
+function formatTick(value, step, axisMax) {
+    if (axisMax === undefined) axisMax = Math.abs(value);
     if (Math.abs(value) < step * 1e-6) return "0";
-    var abs = Math.abs(value);
-    if (step >= 1000 && abs >= 10000) {
-        var divisor, suffix;
-        if (abs >= 1e9) { divisor = 1e9; suffix = "B"; }
-        else if (abs >= 1e6) { divisor = 1e6; suffix = "M"; }
-        else { divisor = 1e3; suffix = "k"; }
-        var d = Math.max(0, -Math.floor(Math.log10(step / divisor) + 1e-9));
-        return (value / divisor).toFixed(Math.min(d, 2)) + suffix;
-    }
-    if (step >= 1) {
-        return Math.round(value).toLocaleString();
-    }
-    var decimals = Math.min(8, Math.ceil(-Math.log10(step) - 1e-9));
-    return value.toFixed(decimals);
+    var sfx = axisSuffix(step, axisMax);
+    var v = value / sfx.divisor;
+    var d = decimalsFor(step / sfx.divisor);
+    if (sfx.divisor > 1) return v.toFixed(d) + sfx.suffix;
+    return v.toLocaleString(undefined, {minimumFractionDigits: d, maximumFractionDigits: d});
 }
 
 // Format the revealed answer for the in-chart label: compact but precise
 // enough to be meaningful at any magnitude.
 function formatAnswer(value) {
     var abs = Math.abs(value);
-    if (abs >= 1e5) {
-        var divisor, suffix;
-        if (abs >= 1e9) { divisor = 1e9; suffix = "B"; }
-        else if (abs >= 1e6) { divisor = 1e6; suffix = "M"; }
-        else { divisor = 1e3; suffix = "k"; }
-        return parseFloat((value / divisor).toPrecision(3)) + suffix;
+    if (abs >= 99995) {
+        // Round to 3 significant digits BEFORE picking the tier, so 999,999
+        // becomes "1M", not "1000k".
+        var tiers = [[1e9, "B"], [1e6, "M"], [1e3, "k"]];
+        for (var i = 0; i < tiers.length; i++) {
+            var v3 = parseFloat((value / tiers[i][0]).toPrecision(3));
+            if (Math.abs(v3) >= 1 && Math.abs(v3) < 1000) return v3 + tiers[i][1];
+        }
+        return parseFloat((value / 1e9).toPrecision(3)).toLocaleString() + "B";
     }
     if (value % 1 === 0) return value.toLocaleString();
     if (abs >= 1) return value.toFixed(1);
@@ -336,7 +352,8 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     // As many ticks as comfortably fit: estimate label width with a coarse
     // step first, then refine. Clamped to [3, 7].
     var step = niceTickStep(xMax - xMin, 5);
-    var sampleLabel = formatTick(Math.abs(xMin) > Math.abs(xMax) ? xMin : xMax, step);
+    var axisMaxAbs = Math.max(Math.abs(xMin), Math.abs(xMax));
+    var sampleLabel = formatTick(Math.abs(xMin) > Math.abs(xMax) ? xMin : xMax, step, axisMaxAbs);
     var approxLabelW = (sampleLabel.length + 1) * tickFont * 0.62;
     var maxTicks = Math.max(3, Math.min(7, Math.floor(plotW / (approxLabelW * 1.7))));
     step = niceTickStep(xMax - xMin, maxTicks);
@@ -362,7 +379,7 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
         label.setAttribute("fill", "#475569");
         label.setAttribute("font-size", tickFont);
         label.setAttribute("font-family", "'JetBrains Mono', monospace");
-        label.textContent = formatTick(tv, step) +
+        label.textContent = formatTick(tv, step, axisMaxAbs) +
             (fit && unit && tv === lastTv ? "\u2009" + unit : "");
         svg.appendChild(halo(label));
     }
@@ -423,6 +440,7 @@ if (typeof module !== "undefined" && module.exports) {
         renderDistChart: renderDistChart,
         computeRobustRange: computeRobustRange,
         niceTickStep: niceTickStep,
+        decimalsFor: decimalsFor,
         formatTick: formatTick,
         formatAnswer: formatAnswer,
     };

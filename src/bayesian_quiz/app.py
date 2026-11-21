@@ -100,12 +100,18 @@ templates.env.filters["fmt_answer"] = _fmt_answer
 
 def _fmt_compact(value: float) -> str:
     """Compact numeric formatting for dense score tables (1.07B, 21.9, 0.002)."""
+    if value == 0:
+        return "0.0"
     a = abs(value)
-    if a >= 1e5:
+    if a >= 99995:  # rounds to >= 100k at 3 significant digits
+        # Round to 3 significant digits BEFORE picking the tier, so 999,999
+        # becomes 1M, not 1000k.
         for divisor, suffix in ((1e9, "B"), (1e6, "M"), (1e3, "k")):
-            if a >= divisor:
-                return f"{float(f'{value / divisor:.3g}'):g}{suffix}"
-    if a >= 1 or value == 0:
+            rounded = float(f"{value / divisor:.3g}")
+            if 1 <= abs(rounded) < 1000:
+                return f"{rounded:g}{suffix}"
+        return f"{float(f'{value / 1e9:.3g}'):g}B"
+    if a >= 1:
         return f"{value:,.1f}".replace(",", " ")
     return f"{float(f'{value:.3g}'):g}"
 

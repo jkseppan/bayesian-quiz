@@ -374,8 +374,21 @@
         // Robust crowd view (answer hidden here, so it is not unioned into range).
         var r = computeRobustRange(estimates, null);
         window.__distStash = {questionIndex: questionIndex, xMin: r.xMin, xMax: r.xMax};
-        function go() {
+        function draw() {
             renderDistChart("dist-chart", estimates, unit, answer, false, {xMin: r.xMin, xMax: r.xMax, fit: true});
+        }
+        function go() {
+            draw();
+            // Redraw whenever the svg's box changes: the Tailwind CDN compiles
+            // new utility classes only after this script has run (first SSE
+            // swap would otherwise measure a default 300x150 svg), and fonts /
+            // fullscreen also resize the box later.
+            if (window.__distRO) window.__distRO.disconnect();
+            var el = document.getElementById("dist-chart");
+            if (el && typeof ResizeObserver !== "undefined") {
+                window.__distRO = new ResizeObserver(draw);
+                window.__distRO.observe(el);
+            }
         }
         // On a fresh page load this script runs mid-parse, before the flex
         // siblings below exist, so the fit measurement would be wrong.
@@ -460,6 +473,20 @@
                 else { window.__distZoomRaf = null; }
             }
             window.__distZoomRaf = requestAnimationFrame(frame);
+
+            // After the zoom settles, redraw at the final range when the svg's
+            // box changes (late Tailwind CSS, fonts, fullscreen). While the
+            // animation runs, each frame re-measures anyway.
+            if (window.__distRO) window.__distRO.disconnect();
+            var el = document.getElementById("reveal-chart");
+            if (el && typeof ResizeObserver !== "undefined") {
+                window.__distRO = new ResizeObserver(function() {
+                    if (!window.__distZoomRaf) {
+                        renderDistChart("reveal-chart", estimates, unit, answer, true, {xMin: f0, xMax: f1, fit: true, hideAnswerLabel: true});
+                    }
+                });
+                window.__distRO.observe(el);
+            }
         }
         // On a fresh page load this script runs mid-parse, before the flex
         // siblings below exist, so the fit measurement would be wrong.
