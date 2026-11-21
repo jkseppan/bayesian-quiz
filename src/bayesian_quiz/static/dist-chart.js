@@ -82,16 +82,18 @@ function computeRobustRange(estimates, answer) {
     return {xMin: xMin, xMax: xMax};
 }
 
-// Pick a "nice" tick step for a range, aiming for ~tickCount ticks.
-function niceTickStep(range, tickCount) {
-    var rawStep = range / tickCount;
-    var mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
-    var steps = [1, 2, 2.5, 5, 10];
-    var step = mag;
-    for (var i = 0; i < steps.length; i++) {
-        if (steps[i] * mag >= rawStep) { step = steps[i] * mag; break; }
+// Pick the smallest "nice" step that yields at most maxTicks ticks over the
+// range (i.e. the densest axis that still fits).
+function niceTickStep(range, maxTicks) {
+    if (!(maxTicks >= 1)) maxTicks = 1;
+    var minStep = range / maxTicks;
+    var mag = Math.pow(10, Math.floor(Math.log10(minStep)));
+    var mults = [1, 2, 2.5, 5, 10];
+    for (var i = 0; i < mults.length; i++) {
+        var s = mults[i] * mag;
+        if (s >= minStep) return s;
     }
-    return step;
+    return 10 * mag;
 }
 
 // Format a tick value given the tick step: enough decimals to distinguish
@@ -181,7 +183,8 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     }
 
     var pad = fit
-        ? {top: ansFont + 16, right: 20, bottom: tickFont * 2.4, left: 20}
+        ? {top: (options.hideAnswerLabel ? Math.round(tickFont * 1.6) : ansFont) + 16,
+           right: 20, bottom: tickFont * 2.4, left: 20}
         : {top: 44, right: 40, bottom: 50, left: 40};
     var plotW = W - pad.left - pad.right;
     var plotH = H - pad.top - pad.bottom;
@@ -202,7 +205,7 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
         xMax = robust.xMax;
     }
 
-    var N = 200;
+    var N = fit ? 400 : 200;
     var xs = [];
     var dx = (xMax - xMin) / (N - 1);
     for (var i = 0; i < N; i++) xs.push(xMin + i * dx);
@@ -210,27 +213,32 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     var minDisplaySigma = (xMax - xMin) / 40;
     var indivCurves = [];
     var mixture = new Array(N).fill(0);
+    var indivPeak = 0;
     for (var e = 0; e < estimates.length; e++) {
         var dSigma = Math.max(estimates[e].sigma, minDisplaySigma);
         var curve = [];
         for (var i = 0; i < N; i++) {
-            var y = bell(xs[i], estimates[e].mu, dSigma);
+            // True pdf shape (the common 1/sqrt(2*pi) factor cancels in the
+            // global rescale below): narrow guesses are genuinely taller.
+            var y = bell(xs[i], estimates[e].mu, dSigma) / dSigma;
             curve.push(y);
             mixture[i] += y;
+            if (y > indivPeak) indivPeak = y;
         }
         indivCurves.push(curve);
     }
     for (var i = 0; i < N; i++) mixture[i] /= estimates.length;
 
-    // Individual curves all peak at 1 (unnormalized bells); the mixture (their
-    // average) peaks lower and lower as guesses spread out, which used to
-    // drown the one curve that matters. Scale each family independently: the
-    // aggregate always reaches 92% of the plot height, individuals reach 72%.
+    // One common scale, anchored so the aggregate peaks at 92% of the plot
+    // height. Individual curves share that scale (true relative heights);
+    // if the tallest one would overshoot the plot, all individuals are
+    // shrunk together just enough to fit.
     var mixPeak = 0;
     for (var i = 0; i < N; i++) if (mixture[i] > mixPeak) mixPeak = mixture[i];
     if (mixPeak <= 0) mixPeak = 1;
-    var mixScale = 1 / (mixPeak * 1.087);   // peak -> 0.92
-    var indivScale = 0.72;                   // bells peak at 1 -> 0.72
+    var mixScale = 0.92 / mixPeak;
+    var indivScale = mixScale;
+    if (indivPeak * mixScale > 0.98) indivScale = 0.98 / indivPeak;
 
     function sx(x) { return pad.left + (x - xMin) / (xMax - xMin) * plotW; }
     function sy(y) { return pad.top + plotH - Math.min(1, y) * plotH; }
@@ -290,7 +298,7 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     if (own && isFinite(own.mu) && isFinite(own.sigma)) {
         var ownSigma = Math.max(own.sigma, minDisplaySigma);
         var ownYs = [];
-        for (var i = 0; i < N; i++) ownYs.push(bell(xs[i], own.mu, ownSigma));
+        for (var i = 0; i < N; i++) ownYs.push(bell(xs[i], own.mu, ownSigma) / ownSigma);
         var ownPath = document.createElementNS(ns, "path");
         ownPath.setAttribute("d", buildPath(ownYs, indivScale));
         ownPath.setAttribute("fill", "none");
@@ -299,11 +307,13 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
         ownPath.setAttribute("stroke-dasharray", "6,4");
         svg.appendChild(ownPath);
 
+        var ownPeakY = 0;
+        for (var i = 0; i < N; i++) if (ownYs[i] > ownPeakY) ownPeakY = ownYs[i];
         var ownX = sx(own.mu);
         if (ownX >= pad.left && ownX <= W - pad.right) {
             var ownLabel = document.createElementNS(ns, "text");
             ownLabel.setAttribute("x", ownX);
-            ownLabel.setAttribute("y", sy(indivScale) - 8);
+            ownLabel.setAttribute("y", Math.max(tickFont, sy(Math.min(1, ownPeakY * indivScale)) - 8));
             ownLabel.setAttribute("text-anchor", "middle");
             ownLabel.setAttribute("fill", "#7c3aed");
             ownLabel.setAttribute("font-size", youFont);
@@ -323,15 +333,17 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     axis.setAttribute("stroke-width", fit ? 2 : 1);
     svg.appendChild(axis);
 
-    // Adaptive tick count: leave room for wide labels (big numbers, decimals).
-    var tickCount = 5;
-    var step = niceTickStep(xMax - xMin, tickCount);
-    var sampleLabel = formatTick(xMax, step);
-    var approxLabelW = sampleLabel.length * tickFont * 0.62;
-    var maxTicks = Math.max(3, Math.floor(plotW / (approxLabelW * 1.8)));
-    if (maxTicks < tickCount) step = niceTickStep(xMax - xMin, maxTicks);
+    // As many ticks as comfortably fit: estimate label width with a coarse
+    // step first, then refine. Clamped to [3, 7].
+    var step = niceTickStep(xMax - xMin, 5);
+    var sampleLabel = formatTick(Math.abs(xMin) > Math.abs(xMax) ? xMin : xMax, step);
+    var approxLabelW = (sampleLabel.length + 1) * tickFont * 0.62;
+    var maxTicks = Math.max(3, Math.min(7, Math.floor(plotW / (approxLabelW * 1.7))));
+    step = niceTickStep(xMax - xMin, maxTicks);
 
     var tickStart = Math.ceil(xMin / step) * step;
+    var lastTv = tickStart;
+    for (var tv = tickStart; tv <= xMax + step * 1e-6; tv += step) lastTv = tv;
     for (var tv = tickStart; tv <= xMax + step * 1e-6; tv += step) {
         var tx = sx(tv);
         var tick = document.createElementNS(ns, "line");
@@ -350,11 +362,12 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
         label.setAttribute("fill", "#475569");
         label.setAttribute("font-size", tickFont);
         label.setAttribute("font-family", "'JetBrains Mono', monospace");
-        label.textContent = formatTick(tv, step);
+        label.textContent = formatTick(tv, step) +
+            (fit && unit && tv === lastTv ? "\u2009" + unit : "");
         svg.appendChild(halo(label));
     }
 
-    if (unit) {
+    if (unit && !fit) {
         var unitLabel = document.createElementNS(ns, "text");
         unitLabel.setAttribute("x", W - pad.right);
         unitLabel.setAttribute("y", sy(0) - (fit ? 10 : 8));
@@ -379,12 +392,16 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
         ansLine.setAttribute("stroke-dasharray", "8,4");
         svg.appendChild(ansLine);
 
-        if (options.hideAnswerLabel) return;
-
-        var ansText = formatAnswer(answer) + (unit ? " " + unit : "");
+        // Projector reveal shows the exact answer as a headline, so the
+        // in-chart label becomes a compact tag that just marks the line.
+        var compact = !!options.hideAnswerLabel;
+        var tagFont = compact ? Math.round(tickFont * 1.15) : ansFont;
+        var ansText = compact
+            ? formatAnswer(answer)
+            : formatAnswer(answer) + (unit ? " " + unit : "");
         // Clamp the label horizontally so it never runs off either edge of
         // the drawing (the answer line itself can sit right at the edge).
-        var halfW = ansText.length * ansFont * 0.31;
+        var halfW = ansText.length * tagFont * 0.31;
         var lx = Math.max(halfW + 4, Math.min(W - halfW - 4, ax));
 
         var ansLabel = document.createElementNS(ns, "text");
@@ -392,7 +409,7 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
         ansLabel.setAttribute("y", pad.top - 8);
         ansLabel.setAttribute("text-anchor", "middle");
         ansLabel.setAttribute("fill", "#059669");
-        ansLabel.setAttribute("font-size", ansFont);
+        ansLabel.setAttribute("font-size", tagFont);
         ansLabel.setAttribute("font-weight", "600");
         ansLabel.setAttribute("font-family", "'JetBrains Mono', monospace");
         ansLabel.textContent = ansText;

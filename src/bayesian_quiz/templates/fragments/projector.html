@@ -8,7 +8,7 @@
                 Bayesian Quiz
             </h1>
             <div class="flex items-center gap-[4vmin] justify-center">
-                <img src="/api/qr?{{ slug }}" alt="QR code" style="image-rendering: pixelated" class="w-[32vmin] h-[32vmin] rounded-xl shadow-lg">
+                <img src="/api/qr?{{ slug }}" alt="QR code" style="image-rendering: pixelated" class="w-[40vmin] h-[40vmin] rounded-xl shadow-lg">
                 <div class="text-left">
                     <p class="text-[3vmin] text-slate-600 mb-[0.5vmin]">Scan to join</p>
                     <p class="font-mono font-semibold text-indigo-600 text-[2.8vmin]">{{ join_domain }}/?{{ slug }}</p>
@@ -61,25 +61,25 @@
     <h2 class="text-[2.8vmin] font-bold mb-[0.5vmin] text-center shrink-0">What is the Ultimate Answer to Life, The Universe, and Everything? <span class="text-slate-500 font-normal text-[2vmin] ml-2">answer = 42</span></h2>
     <div class="flex flex-col gap-[0.5vmin] flex-1 min-h-0">
         <div class="flex items-center bg-white rounded-xl shadow-md border border-emerald-100 flex-1 min-h-0 px-[2vmin] overflow-hidden">
-            <div class="w-[19vmin] shrink-0">
+            <div class="w-[21vmin] shrink-0">
                 <p class="text-[2.4vmin] font-semibold text-emerald-600 leading-tight">Confident &amp; Correct</p>
-                <p class="font-mono text-slate-500 text-[1.8vmin]">μ=42, σ=1</p>
+                <p class="font-mono text-slate-500 text-[2.1vmin]">μ=42, σ=1</p>
             </div>
             <svg id="intro-chart-a" class="flex-1 min-w-0 w-full" viewBox="0 0 1200 180" preserveAspectRatio="xMidYMid meet"></svg>
             <p class="font-mono text-[3.5vmin] font-bold text-emerald-600 w-[14vmin] text-right shrink-0">98 pts</p>
         </div>
         <div class="flex items-center bg-white rounded-xl shadow-md border border-amber-100 flex-1 min-h-0 px-[2vmin] overflow-hidden">
-            <div class="w-[19vmin] shrink-0">
+            <div class="w-[21vmin] shrink-0">
                 <p class="text-[2.4vmin] font-semibold text-amber-600 leading-tight">Uncertain &amp; Correct</p>
-                <p class="font-mono text-slate-500 text-[1.8vmin]">μ=42, σ=20</p>
+                <p class="font-mono text-slate-500 text-[2.1vmin]">μ=42, σ=20</p>
             </div>
             <svg id="intro-chart-b" class="flex-1 min-w-0 w-full" viewBox="0 0 1200 180" preserveAspectRatio="xMidYMid meet"></svg>
             <p class="font-mono text-[3.5vmin] font-bold text-amber-600 w-[14vmin] text-right shrink-0">63 pts</p>
         </div>
         <div class="flex items-center bg-white rounded-xl shadow-md border border-red-100 flex-1 min-h-0 px-[2vmin] overflow-hidden">
-            <div class="w-[19vmin] shrink-0">
+            <div class="w-[21vmin] shrink-0">
                 <p class="text-[2.4vmin] font-semibold text-red-600 leading-tight">Confident &amp; Wrong</p>
-                <p class="font-mono text-slate-500 text-[1.8vmin]">μ=30, σ=1</p>
+                <p class="font-mono text-slate-500 text-[2.1vmin]">μ=30, σ=1</p>
             </div>
             <svg id="intro-chart-c" class="flex-1 min-w-0 w-full" viewBox="0 0 1200 180" preserveAspectRatio="xMidYMid meet"></svg>
             <p class="font-mono text-[3.5vmin] font-bold text-red-600 w-[14vmin] text-right shrink-0">32 pts</p>
@@ -274,19 +274,19 @@
     <h2 class="text-[5.5vmin] font-bold mb-[4vmin] bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">How to play</h2>
     <div class="w-full max-w-[75vw] space-y-[2vmin]">
         <div class="flex items-center gap-[3vmin] bg-white rounded-2xl p-[2.8vmin] shadow-md border border-indigo-100">
-            <span class="text-[4.5vmin] text-indigo-600 shrink-0 leading-none">&#956;&#963;</span>
+            <span class="text-[4.5vmin] text-indigo-600 shrink-0 leading-none w-[7vmin] text-center">&#956;&#963;</span>
             <p class="text-[3vmin] text-slate-700 leading-snug">Input a <strong>mean</strong> (your guess) and a <strong>standard deviation</strong> (how sure you are)</p>
         </div>
         <div class="flex items-center gap-[3vmin] bg-white rounded-2xl p-[2.8vmin] shadow-md border border-indigo-100">
-            <span class="text-[4.5vmin] shrink-0 leading-none">&#9201;</span>
+            <span class="text-[4.5vmin] shrink-0 leading-none w-[7vmin] text-center">&#9201;</span>
             <p class="text-[3vmin] text-slate-700 leading-snug">You have <strong>30 seconds</strong> to answer</p>
         </div>
         <div class="flex items-center gap-[3vmin] bg-white rounded-2xl p-[2.8vmin] shadow-md border border-indigo-100">
-            <span class="text-[4.5vmin] shrink-0 leading-none">&#128504;</span>
+            <span class="text-[4.5vmin] shrink-0 leading-none w-[7vmin] text-center">&#128504;</span>
             <p class="text-[3vmin] text-slate-700 leading-snug">Speed isn't scored — as long as you're under the 30-second limit</p>
         </div>
         <div class="flex items-center gap-[3vmin] bg-white rounded-2xl p-[2.8vmin] shadow-md border border-indigo-100">
-            <span class="text-[4.5vmin] shrink-0 leading-none">&#129302;</span>
+            <span class="text-[4.5vmin] shrink-0 leading-none w-[7vmin] text-center">&#129302;</span>
             <p class="text-[3vmin] text-slate-700 leading-snug">Please don't use AI assistants</p>
         </div>
     </div>
@@ -305,7 +305,7 @@
 {% elif game.phase.value == "question_active" %}
 <!-- Question: Show question with countdown -->
 <div class="flex-1 flex flex-col px-[3vmin] py-[2.5vmin]">
-    <div class="flex items-center justify-between shrink-0 text-[2.4vmin] text-slate-500">
+    <div class="flex items-center justify-between shrink-0 text-[2.6vmin] text-slate-600">
         <span>Question {{ game.current_question_index + 1 }} of {{ game.questions | length }}</span>
         {% if game.current_question.unit %}
         <span>answers in <span class="font-mono text-slate-600">{{ game.current_question.unit }}</span></span>
@@ -356,7 +356,7 @@
     <h2 class="text-[3.4vmin] font-semibold text-center shrink-0 leading-snug max-w-[92vw]" style="text-wrap: balance">{{ game.current_question.text | mini_markup }}</h2>
 
     <div class="shrink-0 h-[8vmin] flex items-center justify-center">
-        <p class="text-[3vmin] text-slate-500"><span class="font-mono text-[4.5vmin] font-bold text-indigo-600">{{ estimates | length }}</span> estimate{{ "" if estimates | length == 1 else "s" }} received</p>
+        <p class="text-[3vmin] text-slate-600"><span class="font-mono text-[4.5vmin] font-bold text-indigo-600">{{ estimates | length }}</span> estimate{{ "" if estimates | length == 1 else "s" }} received</p>
     </div>
 
     {% if estimates %}
@@ -384,14 +384,14 @@
     })();
     </script>
     {% else %}
-    <div class="flex-1 w-full flex flex-col items-center justify-center gap-[2vmin]">
-        <span class="text-[6vmin]">&#129431;</span>
-        <span class="text-[4vmin] text-slate-500 font-semibold">No estimates received</span>
+    <div class="flex-1 w-full flex flex-col items-center justify-center gap-[2.5vmin]">
+        <span class="text-[12vmin]">&#129431;</span>
+        <span class="text-[4vmin] text-slate-600 font-semibold">Nobody dared to guess</span>
     </div>
     {% endif %}
 
     <div class="shrink-0 text-center max-w-[75vw] relative pt-[1.5vmin]">
-        <p class="text-[2.5vmin] leading-snug invisible" aria-hidden="true">{{ game.current_question.fun_fact | mini_markup }}</p>
+        <p class="text-[2.7vmin] leading-snug invisible" aria-hidden="true">{{ game.current_question.fun_fact | mini_markup }}</p>
     </div>
 </div>
 
@@ -468,13 +468,13 @@
     })();
     </script>
     {% else %}
-    <div class="flex-1 w-full flex flex-col items-center justify-center gap-[2vmin]">
-        <span class="text-[6vmin]">&#129431;</span>
-        <span class="text-[4vmin] text-slate-500 font-semibold">Nobody answered this one</span>
+    <div class="flex-1 w-full flex flex-col items-center justify-center gap-[2.5vmin]">
+        <span class="text-[12vmin]">&#129431;</span>
+        <span class="text-[4vmin] text-slate-600 font-semibold">Nobody answered this one</span>
     </div>
     {% endif %}
 
-    <p class="shrink-0 text-[2.5vmin] text-slate-700 max-w-[75vw] text-center leading-snug pt-[1.5vmin]">
+    <p class="shrink-0 text-[2.7vmin] text-slate-700 max-w-[75vw] text-center leading-snug pt-[1.5vmin]">
         {{ game.current_question.fun_fact | mini_markup }}
     </p>
 </div>
@@ -486,7 +486,7 @@
 
     {% set results = game.get_question_results() %}
     {% if results %}
-    <div class="w-[90vw] max-w-[1700px]">
+    <div class="w-[85vw] max-w-[1400px]">
         <table class="w-full text-left table-fixed">
             <colgroup>
                 <col style="width: 6%">
@@ -497,7 +497,7 @@
                 <col style="width: 13%">
             </colgroup>
             <thead>
-                <tr class="text-slate-500 text-[2vmin] border-b-2 border-slate-200">
+                <tr class="text-slate-500 text-[2.2vmin] border-b-2 border-slate-200">
                     <th class="py-[1vmin]">#</th>
                     <th class="py-[1vmin]">Player</th>
                     <th class="py-[1vmin] font-mono text-right">&mu;</th>
@@ -509,7 +509,7 @@
             <tbody>
                 {% for r in results[:5] %}
                 <tr class="border-b border-slate-100">
-                    <td class="py-[1.6vmin] text-slate-400 font-bold text-[2.8vmin]">{{ loop.index }}</td>
+                    <td class="py-[1.6vmin] text-slate-500 font-bold text-[2.8vmin]">{{ loop.index }}</td>
                     <td class="py-[1.6vmin] font-semibold text-[2.8vmin] truncate pr-[2vmin]">{{ r.nickname }}</td>
                     <td class="py-[1.6vmin] font-mono text-right text-[2.6vmin]">{{ r.mu | fmt_compact }}</td>
                     <td class="py-[1.6vmin] font-mono text-right text-[2.6vmin]">{{ r.sigma | fmt_compact }}</td>
@@ -520,13 +520,13 @@
             </tbody>
         </table>
         {% if results | length > 5 %}
-        <p class="text-[2vmin] text-slate-400 mt-[2vmin] text-center">Top 5 of {{ results | length }} answers</p>
+        <p class="text-[2.4vmin] text-slate-500 mt-[2vmin] text-center">Top 5 of {{ results | length }} answers</p>
         {% endif %}
     </div>
     {% else %}
-    <div class="flex flex-col items-center gap-[2vmin]">
-        <span class="text-[6vmin]">&#129431;</span>
-        <p class="text-[4vmin] text-slate-500 font-semibold">No estimates submitted</p>
+    <div class="flex flex-col items-center gap-[2.5vmin]">
+        <span class="text-[12vmin]">&#129431;</span>
+        <p class="text-[4vmin] text-slate-600 font-semibold">No estimates submitted</p>
     </div>
     {% endif %}
 </div>
@@ -556,7 +556,7 @@
         <p class="text-slate-500 text-[3vmin] text-center">No players yet</p>
         {% endfor %}
         {% if ranked | length > 6 %}
-        <p class="text-[2vmin] text-slate-400 text-center pt-[1vmin]">Top 6 of {{ ranked | length }} players</p>
+        <p class="text-[2.4vmin] text-slate-500 text-center pt-[1vmin]">Top 6 of {{ ranked | length }} players</p>
         {% endif %}
     </div>
 </div>
@@ -591,6 +591,6 @@
 
 {% if game.phase.value == "intro" %}
 <div class="fixed top-4 right-4">
-    <img src="/api/qr?{{ slug }}" alt="QR code" style="image-rendering: pixelated; width: 14vmin; height: 14vmin" class="rounded shadow-md border-4 border-white">
+    <img src="/api/qr?{{ slug }}" alt="QR code" style="image-rendering: pixelated; width: 11vmin; height: 11vmin" class="rounded shadow-md border-4 border-white">
 </div>
 {% endif %}

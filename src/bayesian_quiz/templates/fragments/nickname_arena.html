@@ -64,10 +64,16 @@
                 var ang = Math.random() * Math.PI * 2;
                 var spd = 10 + Math.random() * 10;
                 vx = Math.cos(ang) * spd; vy = Math.sin(ang) * spd;
-                for (var t = 0; t < 80; t++) {
+                for (var t = 0; t < 120; t++) {
                     x = Math.random() * Math.max(1, W - w);
                     y = Math.random() * Math.max(1, H - h);
-                    if (!excl || x + w < excl.l || x > excl.r || y + h < excl.t || y > excl.b) break;
+                    var clash = excl && !(x + w < excl.l || x > excl.r || y + h < excl.t || y > excl.b);
+                    for (var q = 0; !clash && q < bodies.length; q++) {
+                        var o = bodies[q];
+                        if (x < o.x + o.w + 16 && x + w + 16 > o.x &&
+                            y < o.y + o.h + 10 && y + h + 10 > o.y) clash = true;
+                    }
+                    if (!clash) break;
                 }
             }
 
