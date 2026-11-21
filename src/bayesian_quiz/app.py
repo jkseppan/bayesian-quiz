@@ -86,6 +86,33 @@ def _fmt_number(value: float) -> str:
 templates.env.filters["fmt_number"] = _fmt_number
 
 
+def _fmt_answer(value: float) -> str:
+    """Exact-but-tidy formatting for the revealed answer headline."""
+    if value == int(value):
+        return f"{int(value):,}".replace(",", " ")
+    if abs(value) >= 1:
+        return f"{value:,.2f}".replace(",", " ").rstrip("0").rstrip(".")
+    return f"{float(f'{value:.3g}'):g}"
+
+
+templates.env.filters["fmt_answer"] = _fmt_answer
+
+
+def _fmt_compact(value: float) -> str:
+    """Compact numeric formatting for dense score tables (1.07B, 21.9, 0.002)."""
+    a = abs(value)
+    if a >= 1e5:
+        for divisor, suffix in ((1e9, "B"), (1e6, "M"), (1e3, "k")):
+            if a >= divisor:
+                return f"{float(f'{value / divisor:.3g}'):g}{suffix}"
+    if a >= 1 or value == 0:
+        return f"{value:,.1f}".replace(",", " ")
+    return f"{float(f'{value:.3g}'):g}"
+
+
+templates.env.filters["fmt_compact"] = _fmt_compact
+
+
 _MARKS = {"*": "\x01", "+": "\x02", "`": "\x03"}
 
 
@@ -350,7 +377,7 @@ async def fragment_player_count(request: Request):
     _slug, game = _get_game(request)
     n = len(game.state.participants)
     return HTMLResponse(
-        f'<span class="font-mono text-3xl font-bold text-indigo-600">{n}</span>'
+        f'<span class="font-mono text-[4.5vmin] font-bold text-indigo-600">{n}</span>'
         f" players joined"
     )
 

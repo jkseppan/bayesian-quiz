@@ -58,18 +58,76 @@ function computeRobustRange(estimates, answer) {
         xMax = center + padAmt;
     }
 
+    // All guesses non-negative (and the answer too, when shown): don't let the
+    // 2.5-sigma tails drag the axis below zero for an obviously positive
+    // quantity (years, GWh, counts...).
+    var minMu = Math.min.apply(null, mus);
+    var answerNonNeg = answer === null || answer === undefined || answer >= 0;
+    if (minMu >= 0 && answerNonNeg && xMin < 0) xMin = 0;
+
     // Union the answer in (when it must be included) then re-pad below.
     if (answer !== null && answer !== undefined && isFinite(answer)) {
         if (answer < xMin) xMin = answer;
         if (answer > xMax) xMax = answer;
     }
 
-    // Keep the existing 5% padding behavior.
+    // Keep the existing 5% padding behavior (but never pad a clamped-at-zero
+    // axis back below zero).
+    var clampedZero = xMin === 0;
     var xPad = (xMax - xMin) * 0.05;
     xMin -= xPad;
     xMax += xPad;
+    if (clampedZero && xMin < 0) xMin = 0;
 
     return {xMin: xMin, xMax: xMax};
+}
+
+// Pick a "nice" tick step for a range, aiming for ~tickCount ticks.
+function niceTickStep(range, tickCount) {
+    var rawStep = range / tickCount;
+    var mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    var steps = [1, 2, 2.5, 5, 10];
+    var step = mag;
+    for (var i = 0; i < steps.length; i++) {
+        if (steps[i] * mag >= rawStep) { step = steps[i] * mag; break; }
+    }
+    return step;
+}
+
+// Format a tick value given the tick step: enough decimals to distinguish
+// neighbouring ticks, compact SI suffixes for large magnitudes, and no "-0".
+function formatTick(value, step) {
+    if (Math.abs(value) < step * 1e-6) return "0";
+    var abs = Math.abs(value);
+    if (step >= 1000 && abs >= 10000) {
+        var divisor, suffix;
+        if (abs >= 1e9) { divisor = 1e9; suffix = "B"; }
+        else if (abs >= 1e6) { divisor = 1e6; suffix = "M"; }
+        else { divisor = 1e3; suffix = "k"; }
+        var d = Math.max(0, -Math.floor(Math.log10(step / divisor) + 1e-9));
+        return (value / divisor).toFixed(Math.min(d, 2)) + suffix;
+    }
+    if (step >= 1) {
+        return Math.round(value).toLocaleString();
+    }
+    var decimals = Math.min(8, Math.ceil(-Math.log10(step) - 1e-9));
+    return value.toFixed(decimals);
+}
+
+// Format the revealed answer for the in-chart label: compact but precise
+// enough to be meaningful at any magnitude.
+function formatAnswer(value) {
+    var abs = Math.abs(value);
+    if (abs >= 1e5) {
+        var divisor, suffix;
+        if (abs >= 1e9) { divisor = 1e9; suffix = "B"; }
+        else if (abs >= 1e6) { divisor = 1e6; suffix = "M"; }
+        else { divisor = 1e3; suffix = "k"; }
+        return parseFloat((value / divisor).toPrecision(3)) + suffix;
+    }
+    if (value % 1 === 0) return value.toLocaleString();
+    if (abs >= 1) return value.toFixed(1);
+    return parseFloat(value.toPrecision(3)).toString();
 }
 
 // renderDistChart(svgId, estimates, unit, answer, drawAnswer, options)
@@ -79,17 +137,52 @@ function computeRobustRange(estimates, answer) {
 //     the robust range is derived from the estimates (and answer, when present).
 //   fontScale: multiplier for axis tick / unit label sizes (small screens)
 //   own: {mu, sigma} — highlight one estimate as "you"
+//   fit: size the drawing to the SVG element's current client box instead of
+//     the fixed 800x320 viewBox (projector: fills whatever space it is given,
+//     with font sizes scaled to the rendered pixels).
 function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     if (drawAnswer === undefined) drawAnswer = true;
     if (answer === undefined) answer = null;
     options = options || {};
     var fontScale = options.fontScale || 1;
     var own = options.own || null;
+    var fit = !!options.fit;
     var svg = document.getElementById(svgId);
     if (!svg || estimates.length === 0) return;
 
     var W = 800, H = 320;
-    var pad = {top: 44, right: 40, bottom: 50, left: 40};
+    if (fit) {
+        var box = svg.getBoundingClientRect();
+        if (box.width > 10 && box.height > 10) {
+            W = Math.round(box.width);
+            H = Math.round(box.height);
+        }
+        svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+        svg.style.overflow = "visible";
+    }
+
+    // Typography: fixed sizes for the legacy 800x320 participant chart,
+    // proportional-to-pixels for fit mode (projector).
+    var tickFont, unitFont, ansFont, youFont, aggStroke, indivStroke;
+    if (fit) {
+        tickFont = Math.max(20, Math.round(H * 0.045)) * fontScale;
+        unitFont = tickFont;
+        ansFont = Math.max(28, Math.round(H * 0.075)) * fontScale;
+        youFont = Math.max(22, Math.round(H * 0.055)) * fontScale;
+        aggStroke = Math.max(3, H * 0.008);
+        indivStroke = Math.max(1.5, H * 0.0035);
+    } else {
+        tickFont = 13 * fontScale;
+        unitFont = 13 * fontScale;
+        ansFont = 32;
+        youFont = 22;
+        aggStroke = 3;
+        indivStroke = 1.5;
+    }
+
+    var pad = fit
+        ? {top: ansFont + 16, right: 20, bottom: tickFont * 2.4, left: 20}
+        : {top: 44, right: 40, bottom: 50, left: 40};
     var plotW = W - pad.left - pad.right;
     var plotH = H - pad.top - pad.bottom;
 
@@ -129,26 +222,27 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     }
     for (var i = 0; i < N; i++) mixture[i] /= estimates.length;
 
-    var yMax = 0;
-    for (var i = 0; i < N; i++) {
-        if (mixture[i] > yMax) yMax = mixture[i];
-        for (var e = 0; e < indivCurves.length; e++) {
-            if (indivCurves[e][i] > yMax) yMax = indivCurves[e][i];
-        }
-    }
-    yMax *= 1.1;
+    // Individual curves all peak at 1 (unnormalized bells); the mixture (their
+    // average) peaks lower and lower as guesses spread out, which used to
+    // drown the one curve that matters. Scale each family independently: the
+    // aggregate always reaches 92% of the plot height, individuals reach 72%.
+    var mixPeak = 0;
+    for (var i = 0; i < N; i++) if (mixture[i] > mixPeak) mixPeak = mixture[i];
+    if (mixPeak <= 0) mixPeak = 1;
+    var mixScale = 1 / (mixPeak * 1.087);   // peak -> 0.92
+    var indivScale = 0.72;                   // bells peak at 1 -> 0.72
 
     function sx(x) { return pad.left + (x - xMin) / (xMax - xMin) * plotW; }
-    function sy(y) { return pad.top + plotH - (y / yMax) * plotH; }
+    function sy(y) { return pad.top + plotH - Math.min(1, y) * plotH; }
 
-    function buildPath(ys) {
-        var d = "M" + sx(xs[0]) + "," + sy(ys[0]);
-        for (var i = 1; i < N; i++) d += "L" + sx(xs[i]) + "," + sy(ys[i]);
+    function buildPath(ys, scale) {
+        var d = "M" + sx(xs[0]) + "," + sy(ys[0] * scale);
+        for (var i = 1; i < N; i++) d += "L" + sx(xs[i]) + "," + sy(ys[i] * scale);
         return d;
     }
 
-    function buildFilledPath(ys) {
-        var d = buildPath(ys);
+    function buildFilledPath(ys, scale) {
+        var d = buildPath(ys, scale);
         d += "L" + sx(xs[N - 1]) + "," + sy(0) + "L" + sx(xs[0]) + "," + sy(0) + "Z";
         return d;
     }
@@ -157,26 +251,40 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     svg.innerHTML = "";
     svg.setAttribute("shape-rendering", "geometricPrecision");
 
+    // White halo behind text so labels stay readable on top of curves.
+    function halo(el) {
+        el.setAttribute("stroke", "#ffffff");
+        el.setAttribute("stroke-width", Math.max(4, tickFont * 0.28));
+        el.setAttribute("paint-order", "stroke");
+        el.setAttribute("stroke-linejoin", "round");
+        return el;
+    }
+
+    // With many players, fade the individual curves so they read as texture
+    // rather than a solid mat; the aggregate carries the signal.
+    var nCurves = indivCurves.length;
+    var indivOpacity = nCurves <= 25 ? 0.30 : Math.max(0.05, 7.5 / nCurves);
+
     for (var e = 0; e < indivCurves.length; e++) {
         var path = document.createElementNS(ns, "path");
-        path.setAttribute("d", buildPath(indivCurves[e]));
+        path.setAttribute("d", buildPath(indivCurves[e], indivScale));
         path.setAttribute("fill", "none");
-        path.setAttribute("stroke", "rgba(99, 102, 241, 0.2)");
-        path.setAttribute("stroke-width", "1.5");
+        path.setAttribute("stroke", "rgba(99, 102, 241, " + indivOpacity.toFixed(3) + ")");
+        path.setAttribute("stroke-width", indivStroke);
         svg.appendChild(path);
     }
 
     var fill = document.createElementNS(ns, "path");
-    fill.setAttribute("d", buildFilledPath(mixture));
-    fill.setAttribute("fill", "rgba(99, 102, 241, 0.1)");
+    fill.setAttribute("d", buildFilledPath(mixture, mixScale));
+    fill.setAttribute("fill", "rgba(99, 102, 241, 0.12)");
     fill.setAttribute("stroke", "none");
     svg.appendChild(fill);
 
     var line = document.createElementNS(ns, "path");
-    line.setAttribute("d", buildPath(mixture));
+    line.setAttribute("d", buildPath(mixture, mixScale));
     line.setAttribute("fill", "none");
     line.setAttribute("stroke", "#4f46e5");
-    line.setAttribute("stroke-width", "3");
+    line.setAttribute("stroke-width", aggStroke);
     svg.appendChild(line);
 
     if (own && isFinite(own.mu) && isFinite(own.sigma)) {
@@ -184,10 +292,10 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
         var ownYs = [];
         for (var i = 0; i < N; i++) ownYs.push(bell(xs[i], own.mu, ownSigma));
         var ownPath = document.createElementNS(ns, "path");
-        ownPath.setAttribute("d", buildPath(ownYs));
+        ownPath.setAttribute("d", buildPath(ownYs, indivScale));
         ownPath.setAttribute("fill", "none");
         ownPath.setAttribute("stroke", "#7c3aed");
-        ownPath.setAttribute("stroke-width", "3");
+        ownPath.setAttribute("stroke-width", aggStroke);
         ownPath.setAttribute("stroke-dasharray", "6,4");
         svg.appendChild(ownPath);
 
@@ -195,14 +303,14 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
         if (ownX >= pad.left && ownX <= W - pad.right) {
             var ownLabel = document.createElementNS(ns, "text");
             ownLabel.setAttribute("x", ownX);
-            ownLabel.setAttribute("y", sy(1) - 8);
+            ownLabel.setAttribute("y", sy(indivScale) - 8);
             ownLabel.setAttribute("text-anchor", "middle");
             ownLabel.setAttribute("fill", "#7c3aed");
-            ownLabel.setAttribute("font-size", "22");
+            ownLabel.setAttribute("font-size", youFont);
             ownLabel.setAttribute("font-weight", "600");
             ownLabel.setAttribute("font-family", "'Space Grotesk', sans-serif");
             ownLabel.textContent = "you";
-            svg.appendChild(ownLabel);
+            svg.appendChild(halo(ownLabel));
         }
     }
 
@@ -212,51 +320,50 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     axis.setAttribute("x2", W - pad.right);
     axis.setAttribute("y2", sy(0));
     axis.setAttribute("stroke", "#cbd5e1");
-    axis.setAttribute("stroke-width", "1");
+    axis.setAttribute("stroke-width", fit ? 2 : 1);
     svg.appendChild(axis);
 
+    // Adaptive tick count: leave room for wide labels (big numbers, decimals).
     var tickCount = 5;
-    var range = xMax - xMin;
-    var rawStep = range / tickCount;
-    var mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
-    var steps = [1, 2, 2.5, 5, 10];
-    var step = mag;
-    for (var i = 0; i < steps.length; i++) {
-        if (steps[i] * mag >= rawStep) { step = steps[i] * mag; break; }
-    }
+    var step = niceTickStep(xMax - xMin, tickCount);
+    var sampleLabel = formatTick(xMax, step);
+    var approxLabelW = sampleLabel.length * tickFont * 0.62;
+    var maxTicks = Math.max(3, Math.floor(plotW / (approxLabelW * 1.8)));
+    if (maxTicks < tickCount) step = niceTickStep(xMax - xMin, maxTicks);
+
     var tickStart = Math.ceil(xMin / step) * step;
-    for (var tv = tickStart; tv <= xMax; tv += step) {
+    for (var tv = tickStart; tv <= xMax + step * 1e-6; tv += step) {
         var tx = sx(tv);
         var tick = document.createElementNS(ns, "line");
         tick.setAttribute("x1", tx);
         tick.setAttribute("y1", sy(0));
         tick.setAttribute("x2", tx);
-        tick.setAttribute("y2", sy(0) + 6);
+        tick.setAttribute("y2", sy(0) + (fit ? 8 : 6));
         tick.setAttribute("stroke", "#94a3b8");
-        tick.setAttribute("stroke-width", "1");
+        tick.setAttribute("stroke-width", fit ? 2 : 1);
         svg.appendChild(tick);
 
         var label = document.createElementNS(ns, "text");
         label.setAttribute("x", tx);
-        label.setAttribute("y", sy(0) + 24);
+        label.setAttribute("y", sy(0) + (fit ? tickFont * 1.5 : 24));
         label.setAttribute("text-anchor", "middle");
-        label.setAttribute("fill", "#64748b");
-        label.setAttribute("font-size", 13 * fontScale);
+        label.setAttribute("fill", "#475569");
+        label.setAttribute("font-size", tickFont);
         label.setAttribute("font-family", "'JetBrains Mono', monospace");
-        label.textContent = tv % 1 === 0 ? tv.toLocaleString() : tv.toFixed(1);
-        svg.appendChild(label);
+        label.textContent = formatTick(tv, step);
+        svg.appendChild(halo(label));
     }
 
     if (unit) {
         var unitLabel = document.createElementNS(ns, "text");
         unitLabel.setAttribute("x", W - pad.right);
-        unitLabel.setAttribute("y", sy(0) + 44);
+        unitLabel.setAttribute("y", sy(0) - (fit ? 10 : 8));
         unitLabel.setAttribute("text-anchor", "end");
-        unitLabel.setAttribute("fill", "#94a3b8");
-        unitLabel.setAttribute("font-size", 13 * fontScale);
+        unitLabel.setAttribute("fill", "#64748b");
+        unitLabel.setAttribute("font-size", unitFont);
         unitLabel.setAttribute("font-family", "'Space Grotesk', sans-serif");
         unitLabel.textContent = unit;
-        svg.appendChild(unitLabel);
+        svg.appendChild(halo(unitLabel));
     }
 
     if (answer !== null && drawAnswer) {
@@ -268,24 +375,38 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
         ansLine.setAttribute("x2", ax);
         ansLine.setAttribute("y2", sy(0));
         ansLine.setAttribute("stroke", "#059669");
-        ansLine.setAttribute("stroke-width", "2.5");
+        ansLine.setAttribute("stroke-width", fit ? 4 : 2.5);
         ansLine.setAttribute("stroke-dasharray", "8,4");
         svg.appendChild(ansLine);
 
+        if (options.hideAnswerLabel) return;
+
+        var ansText = formatAnswer(answer) + (unit ? " " + unit : "");
+        // Clamp the label horizontally so it never runs off either edge of
+        // the drawing (the answer line itself can sit right at the edge).
+        var halfW = ansText.length * ansFont * 0.31;
+        var lx = Math.max(halfW + 4, Math.min(W - halfW - 4, ax));
+
         var ansLabel = document.createElementNS(ns, "text");
-        ansLabel.setAttribute("x", ax);
-        ansLabel.setAttribute("y", pad.top - 6);
+        ansLabel.setAttribute("x", lx);
+        ansLabel.setAttribute("y", pad.top - 8);
         ansLabel.setAttribute("text-anchor", "middle");
         ansLabel.setAttribute("fill", "#059669");
-        ansLabel.setAttribute("font-size", "32");
+        ansLabel.setAttribute("font-size", ansFont);
         ansLabel.setAttribute("font-weight", "600");
         ansLabel.setAttribute("font-family", "'JetBrains Mono', monospace");
-        ansLabel.textContent = (answer % 1 === 0 ? answer.toLocaleString() : answer.toFixed(1)) + (unit ? " " + unit : "");
-        svg.appendChild(ansLabel);
+        ansLabel.textContent = ansText;
+        svg.appendChild(halo(ansLabel));
     }
 }
 
 // Node/CommonJS export for unit testing (no-op in the browser).
 if (typeof module !== "undefined" && module.exports) {
-    module.exports = { renderDistChart: renderDistChart, computeRobustRange: computeRobustRange };
+    module.exports = {
+        renderDistChart: renderDistChart,
+        computeRobustRange: computeRobustRange,
+        niceTickStep: niceTickStep,
+        formatTick: formatTick,
+        formatAnswer: formatAnswer,
+    };
 }
