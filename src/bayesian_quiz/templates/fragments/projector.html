@@ -327,6 +327,13 @@
         </div>
     </div>
 </div>
+<style>
+@keyframes countdown-pulse {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.22); }
+    100% { transform: scale(1); }
+}
+</style>
 <script>
 (function() {
     var el = document.getElementById('projector-countdown');
@@ -337,12 +344,22 @@
     // clock at render, then tick against the local clock from here on.
     var remainingAtRenderMs = (deadline - serverNow) * 1000;
     var endLocal = Date.now() + remainingAtRenderMs;
+    var lastShown = null;
     function tick() {
         var seconds = Math.max(0, Math.ceil((endLocal - Date.now()) / 1000));
         el.textContent = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
         el.className = seconds <= 10
             ? 'text-[11vmin] font-mono font-bold leading-none text-red-600'
             : 'text-[11vmin] font-mono font-bold leading-none text-indigo-600';
+        if (seconds !== lastShown) {
+            if (seconds <= 5 && seconds > 0) {
+                // Pulse once per remaining second in the final stretch.
+                el.style.animation = 'none';
+                void el.offsetWidth;
+                el.style.animation = 'countdown-pulse 0.6s cubic-bezier(.22,1,.36,1)';
+            }
+            lastShown = seconds;
+        }
         if (seconds > 0) requestAnimationFrame(tick);
     }
     tick();
@@ -368,12 +385,10 @@
         var estimates = [{% for e in estimates %}{"mu":{{ e.mu | tojson }},"sigma":{{ e.sigma | tojson }}}{% if not loop.last %},{% endif %}{% endfor %}];
         var unit = {{ game.current_question.unit | tojson }};
         var answer = {{ game.current_question.answer | tojson }};
-        var questionIndex = {{ game.current_question_index | tojson }};
         // Cancel any leftover reveal-zoom loop from a prior fragment swap.
         if (window.__distZoomRaf) { cancelAnimationFrame(window.__distZoomRaf); window.__distZoomRaf = null; }
         // Robust crowd view (answer hidden here, so it is not unioned into range).
         var r = computeRobustRange(estimates, null);
-        window.__distStash = {questionIndex: questionIndex, xMin: r.xMin, xMax: r.xMax};
         function draw() {
             renderDistChart("dist-chart", estimates, unit, answer, false, {xMin: r.xMin, xMax: r.xMax, fit: true});
         }
@@ -427,48 +442,49 @@
         var estimates = [{% for e in estimates %}{"mu":{{ e.mu | tojson }},"sigma":{{ e.sigma | tojson }}}{% if not loop.last %},{% endif %}{% endfor %}];
         var unit = {{ game.current_question.unit | tojson }};
         var answer = {{ game.current_question.answer | tojson }};
-        var questionIndex = {{ game.current_question_index | tojson }};
 
         // Cancel any previous zoom loop if this script re-runs on a fresh swap.
         if (window.__distZoomRaf) { cancelAnimationFrame(window.__distZoomRaf); window.__distZoomRaf = null; }
 
-        // Final frame: robust crowd range unioned with the answer (padded).
+        // Start frame: the crowd-only view (the same range show_distribution
+        // used, recomputed — it is deterministic, so this also works on a
+        // fresh page load). Final frame: crowd range unioned with the answer.
+        var crowd = computeRobustRange(estimates, null);
         var fin = computeRobustRange(estimates, answer);
-
-        // Start frame: the stashed show_distribution range when it matches this
-        // question; otherwise expand the final range ~1.6x so a reload still
-        // gets a gentle zoom rather than a static jump.
-        var stash = window.__distStash;
-        var start;
-        if (stash && stash.questionIndex === questionIndex &&
-            typeof stash.xMin === "number" && typeof stash.xMax === "number") {
-            start = {xMin: stash.xMin, xMax: stash.xMax};
-        } else {
-            var c = (fin.xMin + fin.xMax) / 2;
-            var half = (fin.xMax - fin.xMin) / 2 * 1.6;
-            start = {xMin: c - half, xMax: c + half};
-        }
-        // Union start with final so the animation only ever tightens.
-        var s0 = Math.min(start.xMin, fin.xMin);
-        var s1 = Math.max(start.xMax, fin.xMax);
+        var s0 = crowd.xMin, s1 = crowd.xMax;
         var f0 = fin.xMin, f1 = fin.xMax;
+
+        // When the answer sits outside the crowd view, linger on the crowd
+        // first (an edge chevron points toward the answer), then zoom out to
+        // bring it into frame. Near answers just settle quickly.
+        var far = answer < s0 || answer > s1;
+        var hold = far ? 1100 : 100;
+        var duration = far ? 2400 : 900;
+
+        // Interpolate like a camera: centre linearly, span in log space, so a
+        // big zoom-out moves at a steady perceived rate.
+        var c0 = (s0 + s1) / 2, c1 = (f0 + f1) / 2;
+        var l0 = Math.log(s1 - s0), l1 = Math.log(f1 - f0);
+        function rangeAt(e) {
+            var half = Math.exp(l0 + (l1 - l0) * e) / 2;
+            var c = c0 + (c1 - c0) * e;
+            return {xMin: c - half, xMax: c + half};
+        }
 
         function easeInOut(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
 
         function go() {
-            // Answer line stays visible throughout (drawAnswer=true) as the zoom target.
+            // Answer line (or off-screen chevron) visible throughout as the zoom target.
             renderDistChart("reveal-chart", estimates, unit, answer, true, {xMin: s0, xMax: s1, fit: true, hideAnswerLabel: true});
 
-            var duration = 2500, delay = 400, t0 = null;
+            var delay = 400 + hold, t0 = null;  // 400ms waits out the view-transition cross-fade
             function frame(now) {
                 if (t0 === null) t0 = now;
-                var elapsed = now - t0 - delay;  // wait out the view-transition cross-fade first
+                var elapsed = now - t0 - delay;
                 if (elapsed < 0) { window.__distZoomRaf = requestAnimationFrame(frame); return; }
                 var t = Math.min(1, elapsed / duration);
-                var e = easeInOut(t);
-                var xMin = s0 + (f0 - s0) * e;
-                var xMax = s1 + (f1 - s1) * e;
-                renderDistChart("reveal-chart", estimates, unit, answer, true, {xMin: xMin, xMax: xMax, fit: true, hideAnswerLabel: true});
+                var r = rangeAt(easeInOut(t));
+                renderDistChart("reveal-chart", estimates, unit, answer, true, {xMin: r.xMin, xMax: r.xMax, fit: true, hideAnswerLabel: true});
                 if (t < 1) { window.__distZoomRaf = requestAnimationFrame(frame); }
                 else { window.__distZoomRaf = null; }
             }

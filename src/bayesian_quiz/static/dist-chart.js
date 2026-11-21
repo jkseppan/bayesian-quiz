@@ -399,6 +399,35 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
     if (answer !== null && drawAnswer) {
         var ax = sx(answer);
 
+        if (ax < pad.left - 2 || ax > W - pad.right + 2) {
+            // The answer is outside the current view (reveal zoom-out still
+            // holding on the crowd): point at it with an edge chevron instead
+            // of drawing the line off-canvas (the svg overflow is visible).
+            if (fit) {
+                var dir = ax > W - pad.right ? 1 : -1;
+                var chH = Math.max(14, tickFont * 1.1);
+                var chW = chH * 0.62;
+                var tipX = dir > 0 ? W - pad.right - 6 : pad.left + 6;
+                var cy = pad.top + plotH * 0.45;
+                for (var ch = 0; ch < 2; ch++) {
+                    var bx = tipX - dir * ch * chW * 0.9;
+                    var chev = document.createElementNS(ns, "polyline");
+                    chev.setAttribute("points",
+                        (bx - dir * chW) + "," + (cy - chH) + " " +
+                        bx + "," + cy + " " +
+                        (bx - dir * chW) + "," + (cy + chH));
+                    chev.setAttribute("fill", "none");
+                    chev.setAttribute("stroke", "#059669");
+                    chev.setAttribute("stroke-width", Math.max(3, tickFont * 0.22));
+                    chev.setAttribute("stroke-linecap", "round");
+                    chev.setAttribute("stroke-linejoin", "round");
+                    chev.setAttribute("opacity", ch === 0 ? "0.9" : "0.45");
+                    svg.appendChild(chev);
+                }
+            }
+            return;
+        }
+
         var ansLine = document.createElementNS(ns, "line");
         ansLine.setAttribute("x1", ax);
         ansLine.setAttribute("y1", pad.top);
