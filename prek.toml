@@ -22,3 +22,10 @@ repo = "local"
 hooks = [
   { id = "pytest", name = "pytest", entry = "uv run pytest -q", language = "system", types = ["python"], pass_filenames = false },
 ]
+
+[[repos]]
+repo = "https://github.com/zizmorcore/zizmor-pre-commit"
+rev = "v1.32.0"
+hooks = [
+  { id = "zizmor" },
+]

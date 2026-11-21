@@ -5,14 +5,18 @@ on:
     branches: [master]
   pull_request:
 
+permissions: {}
+
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
 
@@ -23,3 +27,17 @@ jobs:
       - run: uv run playwright install --with-deps chromium
 
       - run: uv run pytest tests/
+
+  verify-actions-lock:
+    runs-on: ubuntu-slim
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - run: gh extension install github/gh-actions-lock --pin v0.5.1
+
+      - run: gh actions-lock --verify
