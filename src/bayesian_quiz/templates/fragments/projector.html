@@ -32,25 +32,25 @@
 {% if game.intro_slide == 0 %}
 <!-- Intro slide 0: concept -->
 <div class="flex-1 flex flex-col items-center justify-center p-[4vmin] text-center bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900">
-    <p class="text-indigo-600 text-[2.2vmin] mb-[1.5vmin] uppercase tracking-widest font-medium">How this quiz works</p>
-    <h2 class="text-[6vmin] font-bold mb-[4vmin] bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent leading-tight">
+    <p class="text-indigo-600 text-[2.5vmin] mb-[1.5vmin] uppercase tracking-widest font-medium">How this quiz works</p>
+    <h2 class="text-[6.8vmin] font-bold mb-[4.5vmin] bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent leading-tight">
         Give your answer as a distribution
     </h2>
-    <div class="grid grid-cols-3 gap-[3vmin] max-w-[85vw] w-full mt-[1vmin]">
-        <div class="bg-white rounded-2xl p-[3.5vmin] shadow-md border border-indigo-100">
-            <div class="text-[6vmin] mb-[1.5vmin] text-indigo-600 leading-none">&#956;</div>
-            <p class="text-[3vmin] font-semibold mb-[1vmin]">Mean</p>
-            <p class="text-[2.4vmin] text-slate-700 leading-snug">Your best estimate of the true value</p>
+    <div class="grid grid-cols-3 gap-[3.5vmin] max-w-[88vw] w-full mt-[1vmin]">
+        <div class="bg-white rounded-2xl p-[4.5vmin] shadow-md border border-indigo-100">
+            <div class="text-[7.5vmin] mb-[2vmin] text-indigo-600 leading-none">&#956;</div>
+            <p class="text-[3.6vmin] font-semibold mb-[1.2vmin]">Mean</p>
+            <p class="text-[2.9vmin] text-slate-700 leading-snug">Your best estimate of the true value</p>
         </div>
-        <div class="bg-white rounded-2xl p-[3.5vmin] shadow-md border border-purple-100">
-            <div class="text-[6vmin] mb-[1.5vmin] text-purple-600 leading-none">&#963;</div>
-            <p class="text-[3vmin] font-semibold mb-[1vmin]">Std. Deviation</p>
-            <p class="text-[2.4vmin] text-slate-700 leading-snug">How confident you are — smaller σ means more confident</p>
+        <div class="bg-white rounded-2xl p-[4.5vmin] shadow-md border border-purple-100">
+            <div class="text-[7.5vmin] mb-[2vmin] text-purple-600 leading-none">&#963;</div>
+            <p class="text-[3.6vmin] font-semibold mb-[1.2vmin]">Std. Deviation</p>
+            <p class="text-[2.9vmin] text-slate-700 leading-snug">How confident you are — smaller σ means more confident</p>
         </div>
-        <div class="bg-white rounded-2xl p-[3.5vmin] shadow-md border border-cyan-100">
-            <div class="text-[6vmin] mb-[1.5vmin] text-cyan-600 leading-none">&#127919;</div>
-            <p class="text-[3vmin] font-semibold mb-[1vmin]">Calibration wins</p>
-            <p class="text-[2.4vmin] text-slate-700 leading-snug">Right <em>and</em> confident scores highest. Wrong <em>and</em> confident is penalised.</p>
+        <div class="bg-white rounded-2xl p-[4.5vmin] shadow-md border border-cyan-100">
+            <div class="text-[7.5vmin] mb-[2vmin] text-cyan-600 leading-none">&#127919;</div>
+            <p class="text-[3.6vmin] font-semibold mb-[1.2vmin]">Calibration wins</p>
+            <p class="text-[2.9vmin] text-slate-700 leading-snug">Right <em>and</em> confident scores highest. Wrong <em>and</em> confident is penalised.</p>
         </div>
     </div>
 </div>
@@ -58,7 +58,8 @@
 {% elif game.intro_slide == 1 %}
 <!-- Intro slide 1: visual comparison — landscape rows -->
 <div class="flex-1 flex flex-col p-[1vmin] bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900 overflow-hidden max-h-screen">
-    <h2 class="text-[2.8vmin] font-bold mb-[0.5vmin] text-center shrink-0">What is the Ultimate Answer to Life, The Universe, and Everything? <span class="text-slate-500 font-normal text-[2vmin] ml-2">answer = 42</span></h2>
+    <!-- mx clears the fixed QR overlay in the top-right corner -->
+    <h2 class="text-[2.8vmin] font-bold mb-[0.5vmin] text-center shrink-0 mx-[13vmin]">What is the Ultimate Answer to Life, The Universe, and Everything? <span class="text-slate-500 font-normal text-[2vmin] ml-2">answer = 42</span></h2>
     <div class="flex flex-col gap-[0.5vmin] flex-1 min-h-0">
         <div class="flex items-center bg-white rounded-xl shadow-md border border-emerald-100 flex-1 min-h-0 px-[2vmin] overflow-hidden">
             <div class="w-[21vmin] shrink-0">
@@ -241,29 +242,29 @@
 {% elif game.intro_slide == 3 %}
 <!-- Intro slide 3: points formula -->
 <div class="flex-1 flex flex-col items-center justify-center p-[3vmin] text-center bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900">
-    <p class="text-indigo-600 text-[2.2vmin] mb-[1.5vmin] uppercase tracking-widest font-medium">From CRPS to points</p>
-    <h2 class="text-[4.2vmin] font-bold mb-[4vmin]">Points range from 0 to 100. Higher is better.</h2>
+    <p class="text-indigo-600 text-[2.5vmin] mb-[1.5vmin] uppercase tracking-widest font-medium">From CRPS to points</p>
+    <h2 class="text-[4.8vmin] font-bold mb-[3.5vmin]">Points range from 0 to 100. Higher is better.</h2>
 
-    <div class="bg-white rounded-3xl shadow-md border border-indigo-100 px-[7vmin] py-[4vmin] mb-[4vmin]">
-        <p class="font-mono text-indigo-500 text-[2.6vmin] mb-[1.5vmin]">points =</p>
-        <p class="font-mono font-bold text-[7vmin] text-indigo-600 leading-none">
-            100 &middot; e<sup class="text-[3.5vmin]">−CRPS / scale</sup>
+    <div class="bg-white rounded-3xl shadow-md border border-indigo-100 px-[8vmin] py-[4.5vmin] mb-[3.5vmin]">
+        <p class="font-mono text-indigo-500 text-[3vmin] mb-[1.5vmin]">points =</p>
+        <p class="font-mono font-bold text-[8vmin] text-indigo-600 leading-none">
+            100 &middot; e<sup class="text-[4vmin]">−CRPS / scale</sup>
         </p>
-        <p class="text-slate-600 mt-[1.5vmin] text-[2.3vmin]">where <em>scale</em> is set per question</p>
+        <p class="text-slate-600 mt-[1.5vmin] text-[2.7vmin]">where <em>scale</em> is set per question</p>
     </div>
 
-    <div class="grid grid-cols-3 gap-[3vmin] max-w-[75vw] w-full text-left">
-        <div class="bg-white rounded-2xl p-[2.8vmin] shadow-md border border-emerald-100">
-            <p class="font-mono text-[3.8vmin] font-bold text-emerald-600 mb-[0.5vmin]">100</p>
-            <p class="text-[2.3vmin] text-slate-700 leading-snug">Perfect prediction (CRPS → 0)</p>
+    <div class="grid grid-cols-3 gap-[3vmin] max-w-[82vw] w-full text-left">
+        <div class="bg-white rounded-2xl p-[3.2vmin] shadow-md border border-emerald-100">
+            <p class="font-mono text-[4.6vmin] font-bold text-emerald-600 mb-[0.6vmin]">100</p>
+            <p class="text-[2.7vmin] text-slate-700 leading-snug">Perfect prediction (CRPS → 0)</p>
         </div>
-        <div class="bg-white rounded-2xl p-[2.8vmin] shadow-md border border-indigo-100">
-            <p class="font-mono text-[3.8vmin] font-bold text-indigo-600 mb-[0.5vmin]">37</p>
-            <p class="text-[2.3vmin] text-slate-700 leading-snug">Off by one scale unit</p>
+        <div class="bg-white rounded-2xl p-[3.2vmin] shadow-md border border-indigo-100">
+            <p class="font-mono text-[4.6vmin] font-bold text-indigo-600 mb-[0.6vmin]">37</p>
+            <p class="text-[2.7vmin] text-slate-700 leading-snug">Off by one scale unit</p>
         </div>
-        <div class="bg-white rounded-2xl p-[2.8vmin] shadow-md border border-red-100">
-            <p class="font-mono text-[3.8vmin] font-bold text-red-500 mb-[0.5vmin]">0</p>
-            <p class="text-[2.3vmin] text-slate-700 leading-snug">Wildly wrong (CRPS → ∞)</p>
+        <div class="bg-white rounded-2xl p-[3.2vmin] shadow-md border border-red-100">
+            <p class="font-mono text-[4.6vmin] font-bold text-red-500 mb-[0.6vmin]">0</p>
+            <p class="text-[2.7vmin] text-slate-700 leading-snug">Wildly wrong (CRPS → ∞)</p>
         </div>
     </div>
 </div>
@@ -271,23 +272,23 @@
 {% elif game.intro_slide == 4 %}
 <!-- Intro slide 4: how to play -->
 <div class="flex-1 flex flex-col items-center justify-center p-[3vmin] bg-gradient-to-br from-indigo-50 via-purple-50 to-cyan-50 text-slate-900">
-    <h2 class="text-[5.5vmin] font-bold mb-[4vmin] bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">How to play</h2>
-    <div class="w-full max-w-[75vw] space-y-[2vmin]">
-        <div class="flex items-center gap-[3vmin] bg-white rounded-2xl p-[2.8vmin] shadow-md border border-indigo-100">
-            <span class="text-[4.5vmin] text-indigo-600 shrink-0 leading-none w-[7vmin] text-center">&#956;&#963;</span>
-            <p class="text-[3vmin] text-slate-700 leading-snug">Input a <strong>mean</strong> (your guess) and a <strong>standard deviation</strong> (how sure you are)</p>
+    <h2 class="text-[6vmin] font-bold mb-[3.5vmin] bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">How to play</h2>
+    <div class="w-full max-w-[78vw] space-y-[2.2vmin]">
+        <div class="flex items-center gap-[3vmin] bg-white rounded-2xl p-[3.2vmin] shadow-md border border-indigo-100">
+            <span class="text-[5vmin] text-indigo-600 shrink-0 leading-none w-[7.5vmin] text-center">&#956;&#963;</span>
+            <p class="text-[3.4vmin] text-slate-700 leading-snug">Input a <strong>mean</strong> (your guess) and a <strong>standard deviation</strong> (how sure you are)</p>
         </div>
-        <div class="flex items-center gap-[3vmin] bg-white rounded-2xl p-[2.8vmin] shadow-md border border-indigo-100">
-            <span class="text-[4.5vmin] shrink-0 leading-none w-[7vmin] text-center">&#9201;</span>
-            <p class="text-[3vmin] text-slate-700 leading-snug">You have <strong>30 seconds</strong> to answer</p>
+        <div class="flex items-center gap-[3vmin] bg-white rounded-2xl p-[3.2vmin] shadow-md border border-indigo-100">
+            <span class="text-[5vmin] shrink-0 leading-none w-[7.5vmin] text-center">&#9201;</span>
+            <p class="text-[3.4vmin] text-slate-700 leading-snug">You have <strong>30 seconds</strong> to answer</p>
         </div>
-        <div class="flex items-center gap-[3vmin] bg-white rounded-2xl p-[2.8vmin] shadow-md border border-indigo-100">
-            <span class="text-[4.5vmin] shrink-0 leading-none w-[7vmin] text-center">&#128504;</span>
-            <p class="text-[3vmin] text-slate-700 leading-snug">Speed isn't scored — as long as you're under the 30-second limit</p>
+        <div class="flex items-center gap-[3vmin] bg-white rounded-2xl p-[3.2vmin] shadow-md border border-indigo-100">
+            <span class="text-[5vmin] shrink-0 leading-none w-[7.5vmin] text-center">&#128504;</span>
+            <p class="text-[3.4vmin] text-slate-700 leading-snug">Speed isn't scored — as long as you're under the 30-second limit</p>
         </div>
-        <div class="flex items-center gap-[3vmin] bg-white rounded-2xl p-[2.8vmin] shadow-md border border-indigo-100">
-            <span class="text-[4.5vmin] shrink-0 leading-none w-[7vmin] text-center">&#129302;</span>
-            <p class="text-[3vmin] text-slate-700 leading-snug">Please don't use AI assistants</p>
+        <div class="flex items-center gap-[3vmin] bg-white rounded-2xl p-[3.2vmin] shadow-md border border-indigo-100">
+            <span class="text-[5vmin] shrink-0 leading-none w-[7.5vmin] text-center">&#129302;</span>
+            <p class="text-[3.4vmin] text-slate-700 leading-snug">Please don't use AI assistants</p>
         </div>
     </div>
 </div>
