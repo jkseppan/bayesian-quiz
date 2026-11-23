@@ -387,6 +387,7 @@
         var answer = {{ game.current_question.answer | tojson }};
         // Cancel any leftover reveal-zoom loop from a prior fragment swap.
         if (window.__distZoomRaf) { cancelAnimationFrame(window.__distZoomRaf); window.__distZoomRaf = null; }
+        if (window.__distZoomTimer) { clearTimeout(window.__distZoomTimer); window.__distZoomTimer = null; }
         // Robust crowd view (answer hidden here, so it is not unioned into range).
         var r = computeRobustRange(estimates, null);
         function draw() {
@@ -445,6 +446,7 @@
 
         // Cancel any previous zoom loop if this script re-runs on a fresh swap.
         if (window.__distZoomRaf) { cancelAnimationFrame(window.__distZoomRaf); window.__distZoomRaf = null; }
+        if (window.__distZoomTimer) { clearTimeout(window.__distZoomTimer); window.__distZoomTimer = null; }
 
         // Start frame: the crowd-only view (the same range show_distribution
         // used, recomputed — it is deterministic, so this also works on a
@@ -477,18 +479,37 @@
             // Answer line (or off-screen chevron) visible throughout as the zoom target.
             renderDistChart("reveal-chart", estimates, unit, answer, true, {xMin: s0, xMax: s1, fit: true, hideAnswerLabel: true});
 
-            var delay = 400 + hold, t0 = null;  // 400ms waits out the view-transition cross-fade
+            var delay = 400 + hold, t0 = null, done = false;  // 400ms waits out the view-transition cross-fade
+            function finish() {
+                // Idempotent landing on the exact final frame, answer in view.
+                if (done) return;
+                done = true;
+                if (window.__distZoomRaf) cancelAnimationFrame(window.__distZoomRaf);
+                window.__distZoomRaf = null;
+                if (window.__distZoomTimer) clearTimeout(window.__distZoomTimer);
+                window.__distZoomTimer = null;
+                renderDistChart("reveal-chart", estimates, unit, answer, true, {xMin: f0, xMax: f1, fit: true, hideAnswerLabel: true});
+            }
             function frame(now) {
+                if (done) return;
+                // Keep the chain alive before doing any work: a render error in
+                // one frame must not strand the chart mid-zoom without the answer.
+                window.__distZoomRaf = requestAnimationFrame(frame);
                 if (t0 === null) t0 = now;
                 var elapsed = now - t0 - delay;
-                if (elapsed < 0) { window.__distZoomRaf = requestAnimationFrame(frame); return; }
+                if (elapsed < 0) return;
                 var t = Math.min(1, elapsed / duration);
+                if (t >= 1) { finish(); return; }
                 var r = rangeAt(easeInOut(t));
-                renderDistChart("reveal-chart", estimates, unit, answer, true, {xMin: r.xMin, xMax: r.xMax, fit: true, hideAnswerLabel: true});
-                if (t < 1) { window.__distZoomRaf = requestAnimationFrame(frame); }
-                else { window.__distZoomRaf = null; }
+                try {
+                    renderDistChart("reveal-chart", estimates, unit, answer, true, {xMin: r.xMin, xMax: r.xMax, fit: true, hideAnswerLabel: true});
+                } catch (err) { /* finish() still lands the final frame */ }
             }
             window.__distZoomRaf = requestAnimationFrame(frame);
+            // Failsafe: rAF can stall or be paused (occluded window, tab switch,
+            // dropped frame); a plain timer still fires, so the reveal always
+            // ends with the answer on screen.
+            window.__distZoomTimer = setTimeout(finish, delay + duration + 600);
 
             // After the zoom settles, redraw at the final range when the svg's
             // box changes (late Tailwind CSS, fonts, fullscreen). While the
