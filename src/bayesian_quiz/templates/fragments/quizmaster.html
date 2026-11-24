@@ -80,7 +80,7 @@
     <div class="space-y-2 mb-4">
         {% for participant in game.participants.values() | sort(attribute='total_score', reverse=True) %}
         <div class="flex items-center gap-3">
-            <span class="w-6 text-center">{{ medals[loop.index] if loop.index in medals else loop.index ~ "." }}</span>
+            <span class="w-6 text-center">{{ medals[loop.index] if loop.index in medals else ("\U0001f3c5" if loop.index <= n_winners else loop.index ~ ".") }}</span>
             <span class="flex-1">{{ participant.nickname }}</span>
             <span class="font-mono text-indigo-400">{{ "%.1f" | format(participant.total_score) }}</span>
         </div>

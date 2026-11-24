@@ -608,8 +608,8 @@
         {% for participant in ranked %}
         {% if loop.index <= 6 %}
         <div class="flex items-center gap-[2.5vmin] px-[2.5vmin] py-[1.4vmin] bg-slate-100 rounded-xl">
-            {% if is_final and loop.index in medals %}
-            <span class="text-[4vmin] w-[6vmin] text-center shrink-0 leading-none">{{ medals[loop.index] }}</span>
+            {% if is_final and loop.index <= n_winners %}
+            <span class="text-[4vmin] w-[6vmin] text-center shrink-0 leading-none">{{ medals[loop.index] if loop.index in medals else "\U0001f3c5" }}</span>
             {% else %}
             <span class="text-[3.2vmin] font-bold text-slate-400 w-[6vmin] text-center shrink-0">{{ loop.index }}</span>
             {% endif %}
@@ -637,8 +637,8 @@
         {% for participant in ranked %}
         {% if loop.index <= 6 %}
         <div class="flex items-center gap-[2.5vmin] px-[2.5vmin] py-[1.4vmin] bg-slate-100 rounded-xl">
-            {% if loop.index in medals %}
-            <span class="text-[4vmin] w-[6vmin] text-center shrink-0 leading-none">{{ medals[loop.index] }}</span>
+            {% if loop.index <= n_winners %}
+            <span class="text-[4vmin] w-[6vmin] text-center shrink-0 leading-none">{{ medals[loop.index] if loop.index in medals else "\U0001f3c5" }}</span>
             {% else %}
             <span class="text-[3.2vmin] font-bold text-slate-400 w-[6vmin] text-center shrink-0">{{ loop.index }}</span>
             {% endif %}
