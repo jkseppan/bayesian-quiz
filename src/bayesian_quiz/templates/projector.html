@@ -5,7 +5,7 @@
 {% block body_class %}bg-white text-slate-900 min-h-screen{% endblock %}
 
 {% block head %}
-<script src="/static/dist-chart.js"></script>
+<script src="{{ static_url('dist-chart.js') }}"></script>
 <style>
 @keyframes _vt-scale-out { to   { opacity: 0; transform: scale(1.03); } }
 @keyframes _vt-scale-in  { from { opacity: 0; transform: scale(0.97); } }

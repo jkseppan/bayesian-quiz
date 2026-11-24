@@ -35,6 +35,21 @@
                 sse.dispatchEvent(new CustomEvent(evt, {bubbles: true}));
             });
         });
+        // This page was rendered by server process {{ boot_id }}. If the SSE
+        // stream (re)connects to a different process, the app was redeployed:
+        // reload so the page never runs stale cached JS against new fragments.
+        // Rate-limited via sessionStorage so mismatches (e.g. multiple server
+        // workers with distinct ids) can never cause a reload loop.
+        source.addEventListener('connected', function(ev) {
+            try {
+                var boot = JSON.parse(ev.data).boot;
+                if (!boot || boot === {{ boot_id | tojson }}) return;
+                var last = parseInt(sessionStorage.getItem('bq-boot-reload') || '0', 10);
+                if (Date.now() - last < 15000) return;
+                sessionStorage.setItem('bq-boot-reload', String(Date.now()));
+                location.reload();
+            } catch (e) { /* sessionStorage unavailable or bad payload: stay put */ }
+        });
     })();
     </script>
     {% endif %}
