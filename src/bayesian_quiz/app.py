@@ -167,6 +167,10 @@ def _static_url(name: str) -> str:
 templates.env.globals["static_url"] = _static_url
 templates.env.globals["boot_id"] = BOOT_ID
 
+# How many final-standings places count as winners (get prizes / highlights).
+# Hard-coded for now; intended to become a per-quiz option later.
+templates.env.globals["n_winners"] = 5
+
 
 class _RevalidatedStaticFiles(StaticFiles):
     """Static files that browsers must revalidate (cheap ETag 304s) instead of

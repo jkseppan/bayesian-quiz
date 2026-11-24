@@ -503,10 +503,10 @@
     {% set medals = {1: "\U0001f947", 2: "\U0001f948", 3: "\U0001f949"} %}
     <div class="space-y-2 mt-8 text-left">
         {% for p in sorted_ps %}
-        {% if loop.index <= 5 %}
+        {% if loop.index <= n_winners %}
         <div class="card border rounded-xl px-4 py-2 flex items-center gap-3 {% if p.id == participant.id %}ring-2 ring-indigo-500{% endif %}">
-            {% if loop.index in medals %}
-            <span class="text-xl w-6 text-center shrink-0">{{ medals[loop.index] }}</span>
+            {% if loop.index <= n_winners %}
+            <span class="text-xl w-6 text-center shrink-0">{{ medals[loop.index] if loop.index in medals else "\U0001f3c5" }}</span>
             {% else %}
             <span class="text-lg font-bold text-slate-400 w-6 text-center shrink-0">{{ loop.index }}</span>
             {% endif %}
@@ -522,7 +522,7 @@
         <p class="text-4xl font-mono font-bold text-indigo-600">{{ "%.1f" | format(participant.total_score) }}</p>
 
         {% if ns.rank is not none %}
-        {% set show_rank = (total_players < 6 and ns.rank <= 3) or (total_players >= 6 and ns.rank <= total_players // 2) %}
+        {% set show_rank = (total_players < 6 and ns.rank <= n_winners) or (total_players >= 6 and ns.rank <= total_players // 2) %}
             {% if show_rank %}
                 {% if ns.rank == 1 %}
         <p class="text-5xl mt-3">&#129351;</p>
@@ -533,6 +533,9 @@
                 {% elif ns.rank == 3 %}
         <p class="text-5xl mt-3">&#129353;</p>
         <p class="text-lg font-semibold text-amber-700 mt-1">3rd place</p>
+                {% elif ns.rank <= n_winners %}
+        <p class="text-5xl mt-3">&#127941;</p>
+        <p class="text-lg font-semibold text-indigo-500 mt-1">{{ ns.rank }}th place &mdash; in the prizes!</p>
                 {% else %}
         <p class="text-lg text-slate-500 mt-3">{{ ns.rank }}th place of {{ total_players }}</p>
                 {% endif %}
