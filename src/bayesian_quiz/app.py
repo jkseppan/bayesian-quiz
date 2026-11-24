@@ -1,6 +1,7 @@
 """FastAPI application for Bayesian Quiz."""
 
 import asyncio
+import hashlib
 import io
 import json
 import os
@@ -144,6 +145,38 @@ templates.env.globals["server_now"] = time.time
 
 STATIC_DIR = Path(__file__).parent / "static"
 
+# Identifies this server process. Sent in the SSE "connected" event so a page
+# left open across a deploy (projector on the venue screen, players' phones)
+# notices the restart and reloads itself — otherwise it keeps running the old
+# cached JavaScript against fragments rendered by the new server.
+BOOT_ID = uuid4().hex[:12]
+
+# Content-hashed static URLs: /static/foo.js?v=<hash> changes whenever the
+# file does, so browsers can never pair a stale cached asset with fresh HTML.
+_static_versions: dict[str, str] = {}
+
+
+def _static_url(name: str) -> str:
+    version = _static_versions.get(name)
+    if version is None:
+        version = hashlib.sha256((STATIC_DIR / name).read_bytes()).hexdigest()[:10]
+        _static_versions[name] = version
+    return f"/static/{name}?v={version}"
+
+
+templates.env.globals["static_url"] = _static_url
+templates.env.globals["boot_id"] = BOOT_ID
+
+
+class _RevalidatedStaticFiles(StaticFiles):
+    """Static files that browsers must revalidate (cheap ETag 304s) instead of
+    trusting heuristic freshness — a stale dist-chart.js breaks the charts."""
+
+    def file_response(self, *args, **kwargs):
+        response = super().file_response(*args, **kwargs)
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
 _ICON_CACHE_HEADERS = {"Cache-Control": "public, max-age=31536000, immutable"}
 
 
@@ -174,7 +207,7 @@ async def apple_touch_icon():
     )
 
 
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.mount("/static", _RevalidatedStaticFiles(directory=STATIC_DIR), name="static")
 
 MOCKUPS_DIR = Path(__file__).parent.parent.parent / "mockups"
 if MOCKUPS_DIR.exists():
@@ -267,7 +300,10 @@ async def events(request: Request):
     async def event_generator():
         try:
             yield "retry: 500\n"
-            yield _sse_message("connected", json.dumps({"phase": game.state.phase.value}))
+            yield _sse_message(
+                "connected",
+                json.dumps({"phase": game.state.phase.value, "boot": BOOT_ID}),
+            )
 
             while not game._shutting_down:
                 if await request.is_disconnected():

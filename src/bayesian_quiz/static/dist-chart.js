@@ -379,8 +379,28 @@ function renderDistChart(svgId, estimates, unit, answer, drawAnswer, options) {
         label.setAttribute("fill", "#475569");
         label.setAttribute("font-size", tickFont);
         label.setAttribute("font-family", "'JetBrains Mono', monospace");
-        label.textContent = formatTick(tv, step, axisMaxAbs) +
-            (fit && unit && tv === lastTv ? "\u2009" + unit : "");
+        var labelText = formatTick(tv, step, axisMaxAbs);
+        if (fit && unit && tv === lastTv) {
+            // Append the unit to the last tick ("15k countries") when the
+            // merged label still fits inside the drawing; otherwise keep the
+            // tick plain and give the unit its own right-aligned label above
+            // the axis end so nothing is clipped at the window edge.
+            var merged = labelText + "\u2009" + unit;
+            if (tx + merged.length * tickFont * 0.31 <= W - 4) {
+                labelText = merged;
+            } else {
+                var unitLabel = document.createElementNS(ns, "text");
+                unitLabel.setAttribute("x", W - pad.right);
+                unitLabel.setAttribute("y", sy(0) - tickFont * 0.5);
+                unitLabel.setAttribute("text-anchor", "end");
+                unitLabel.setAttribute("fill", "#64748b");
+                unitLabel.setAttribute("font-size", tickFont);
+                unitLabel.setAttribute("font-family", "'Space Grotesk', sans-serif");
+                unitLabel.textContent = unit;
+                svg.appendChild(halo(unitLabel));
+            }
+        }
+        label.textContent = labelText;
         svg.appendChild(halo(label));
     }
 
