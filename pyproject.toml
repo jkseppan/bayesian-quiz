@@ -54,6 +54,8 @@ ignore = [
     "RUF002",  # Greek/math symbols in docstrings are intentional in this codebase
 ]
 
+allowed-confusables = ["\u202F"]  # narrow no-break space: thousands separator
+
 [tool.ruff.lint.per-file-ignores]
 "tests/test_xss.py" = ["E501"]    # XSS payload strings cannot be shortened
 "simulate_players.py" = ["RUF001", "E501"]  # Greek letters and long payloads are intentional
